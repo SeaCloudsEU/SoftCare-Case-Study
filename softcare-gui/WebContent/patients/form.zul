@@ -1,0 +1,22 @@
+<?page contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+
+<zk>
+	<include src="/inc/header.zul"/>
+	
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		
+		
+		String title = Labels.getLabel("patients.title.new");
+		String save = Labels.getLabel("patients.save");
+		page.setTitle(title);	
+	</zscript>
+	
+	<window title="${title}" id="patientform" width="800px" sclass="centerwin" use="eu.ehealth.controllers.PattientControllerWindow">
+		<button label="${save }" onClick="patientform.sendPatient(true)" image="/inc/icons/save_edit.png"/>
+	</window>
+	
+	<include src="/inc/footer.zul"/>
+</zk>

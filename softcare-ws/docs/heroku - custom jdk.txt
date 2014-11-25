@@ -1,0 +1,72 @@
+
+1. CREATE APPLICATION IN HEROKU
+
+	heroku create APP
+
+	
+2. CLONE REPOSITORY (in local folder)
+
+	git clone git@heroku.com:APP.git -o heroku
+	
+		--> git clone git@heroku.com:e-health-ws-tests.git -o heroku
+
+	
+[3. PUT ALL APPLICATION SOURCES IN THIS FOLDER]
+	
+	
+4. SPECIFY A JDK VERSION
+
+	Create a system.properties file if one does not already exist, specify the version, and commit it to git. Versions 1.6, 1.7, and 1.8 are supported.
+	$ echo "java.runtime.version=1.7" > system.properties
+	$ git add system.properties
+	$ git commit -m "JDK 7"
+	
+	
+5. CREATE A .jdk-overlay FOLDER
+
+	In your application’s root directory, create a .jdk-overlay folder.
+	$ mkdir .jdk-overlay
+	$ ls -la
+	total 24
+	drwxr-xr-x    9 user  staff   306 Oct 16 14:43 .
+	drwxr-xr-x  202 user  staff  6868 Oct 16 14:40 ..
+	drwxr-xr-x   13 user  staff   442 Oct 16 15:06 .git
+	drwxr-xr-x    3 user  staff   102 Oct 16 14:43 .jdk-overlay
+	-rw-r--r--    1 user  staff    45 Oct 16 14:40 Procfile
+	-rw-r--r--    1 user  staff  1860 Oct 16 14:40 pom.xml
+	drwxr-xr-x    3 user  staff   102 Oct 16 14:40 src
+	-rw-r--r--    1 user  staff    25 Oct 16 14:40 system.properties
+	
+	
+6. ADD CUSTOM FILES
+
+	Copy any custom files into the .jdk-overlay file. The files will be copied to their equivalent directory in the JDK.
+	For example, to have Java Cryptography Extensions copied correctly, the Jar files should be placed in .jdk-overlay/jre/lib/security/.
+	$ mkdir -p .jdk-overlay/jre/lib/security
+	$ cp ~/downloads/jce/local_policy.jar .jdk-overlay/jre/lib/security/
+	Commit the Custom Files
+
+	$ git add .jdk-overlay
+	$ git commit -m "Custom JDK Files"
+	
+
+7. POM.XML
+
+	create POM.XML file --> Heroku recognizes the application as a JAVA application
+	
+	
+8. PROCFILE
+
+	- create 'Procfile' file
+
+	- web:    java $JAVA_OPTS -jar server/webapp-runner.jar --port $PORT target/cxf-hibernate-ws.war
+	
+9. DEPLOY TO HEROKU
+
+	$ git push heroku master
+
+	
+	
+	
+heroku run bash
+

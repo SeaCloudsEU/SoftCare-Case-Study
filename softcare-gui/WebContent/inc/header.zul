@@ -1,0 +1,200 @@
+<zk>
+	<?init class="eu.ehealth.controllers.login.CheckSession" ?>
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		
+		
+		if(session.getAttribute("user")==null)
+		{
+			Executions.sendRedirect("/login.zul");
+		}
+		String user = (String)session.getAttribute("user");
+		
+		String home = Labels.getLabel("menu.home");
+		String patients = Labels.getLabel("menu.patients");
+		String carers = Labels.getLabel("menu.carers");
+		String clinicians = Labels.getLabel("menu.clinicians");
+		String calendar = Labels.getLabel("menu.calendar");
+		String extsrv = Labels.getLabel("menu.extsrv");
+		String warnings = Labels.getLabel("menu.warnings");
+		String qm = Labels.getLabel("qm.menu");
+		String administration = Labels.getLabel("menu.administrators");
+		String path1 = "";
+		String sep1 = "";
+		String path2 = "";
+		String sep2 = "";
+		
+		String hello = Labels.getLabel("menu.hello");
+		String lout = Labels.getLabel("menu.logout");
+		String contact = Labels.getLabel("menu.contact");
+		String close = Labels.getLabel("error.close");
+		Boolean isadmin = (Boolean)Sessions.getCurrent().getAttribute("isadmin");
+		
+		
+		public void aladdinLogout()
+		{
+			session.removeAttribute("user");
+			Executions.getCurrent().sendRedirect("/login.zul");
+		}
+		
+		
+		try 
+		{
+			String formattedPath = Executions.getCurrent().getDesktop().getRequestPath();
+			path1 = "";
+			sep1 = "";
+			path2 = "";
+			sep2 = "";
+					
+			if (formattedPath != null) 
+			{
+				sep1 = " >> ";
+				if (formattedPath.indexOf("patients") != -1)
+				{
+					path1 =  "Patients";
+					if (formattedPath.indexOf("details") != -1)
+					{
+						sep2 = " >> ";
+						path2 +=  "Tasks";
+					}
+				}
+				else if (formattedPath.indexOf("carers") != -1)
+				{
+					path1 = "Carers";
+					if (formattedPath.indexOf("details") != -1)
+					{
+						sep2 = " >> ";
+						path2 +=  "Details";
+					}
+				}
+				else if (formattedPath.indexOf("clinicians") != -1)
+				{
+					path1 = "Clinicians";
+					if (formattedPath.indexOf("details") != -1)
+					{
+						sep2 = " >> ";
+						path2 +=  "Details";
+					}
+				}
+				else if (formattedPath.indexOf("administration") != -1)
+				{
+					path1 = "Administration";
+					if (formattedPath.indexOf("details") != -1)
+					{
+						sep2 = " >> ";
+						path2 +=  "Details";
+					}
+				}
+				else if (formattedPath.indexOf("cms") != -1)
+				{
+					path1 = "Content Management";
+				}
+				else if (formattedPath.indexOf("extsrv") != -1)
+				{
+					path1 = "External Services";
+				}
+				else if (formattedPath.indexOf("qm") != -1)
+				{
+					path1 = "Questionnaire Manager";
+				}
+				else if (formattedPath.indexOf("warnings") != -1)
+				{
+					path1 = "Clinical Warnings";
+				}
+				else {
+					path1 = "";
+					sep1 = "";
+					path2 = "";
+					sep2 = "";
+				}
+			}
+		} 
+		catch (Exception ex) {}
+	</zscript>
+	<style src="/inc/style.css"/>
+	
+	<style dynamic="true">
+        .vista {
+            background:#7F96A3 url(/zkdemo/widgets/menu/toolbar/img/bar.png) repeat-x 0 0;
+            color:white;
+            /*padding-top:7px;*/
+			margin:0 auto;
+			padding-right:15px;
+        }
+    </style>
+
+	<toolbar id="tb" sclass="vista" height="2px" align="end" width="806px"></toolbar>
+	
+	<window width="800px" height="70px" sclass="headerwin">
+		<hbox>
+			<image src="/inc/icons/logo-new.png" onClick='Executions.getCurrent().sendRedirect("/index.zul")' />
+			<separator orient="horizontal" width="350px"/>
+			<vbox sclass="right">
+				<separator height="15px"/>
+				<hbox>
+					<label value="${hello} ${user}, " style="font-style: italic; font-weight: bold; font-size: 12px;"/>
+					<label value="${lout}" id="logout" sclass="link" onClick="aladdinLogout()" style="font-size: 12px;"/>
+				</hbox>
+				<toolbarbutton label="Contact administrator" href="mailto:admin" target="_blank" if="${!isadmin }" image="/inc/icons/email.png"/>
+			</vbox>
+		</hbox>
+	</window>
+	
+	<menubar id="menubar" width="825px" height="28px" sclass="menubar" style="margin:0 auto;">
+		<menuitem sclass="menubaritem" label="${home}" left="20" image="/inc/icons/home.png" height="32px" href="/index.zul" autodisable="self"/>
+		<menuitem label="Users" href="/patients/index.zul" autodisable="self"/>
+		<menuitem label="Caregivers" href="/carers/index.zul" autodisable="self"/>
+		<menuitem label="Doctors" href="/clinicians/index.zul" autodisable="self"/>
+		<menuitem label="${qm}" href="/qm/index.zul" autodisable="self"/>
+		<menuitem label="Services" href="/extsrv/index.zul" autodisable="self"/>
+		<menuitem label="${warnings }" href="/warnings/index.zul" autodisable="self" if="${!isadmin }" image="/inc/icons/warning2.png">
+			<attribute name="onCreate">
+				if(isadmin){
+					self.setDisabled(true);
+				}
+			</attribute>
+		</menuitem>
+		<menuitem label="Content Management" href="/cms/index.zul" autodisable="self"/>
+		<menuitem label="${administration }" href="/administration/index.zul" autodisable="self" if="${isadmin }" tooltip="infoAdmin"/>
+	</menubar>
+	
+	<popup id="infoAdmin" width="300px">
+        <html><![CDATA[
+            Administration: 
+            	<br /> Add, edit and <font color="red">delete</font> other administrators
+               	<br /> <u>admin@ehealth.org</u>
+        ]]></html>
+    </popup>
+	
+	<window width="800px" sclass="headerwin">
+		<hbox>
+			<label value="Home" style="color: #00A3EF; font-style: italic; font-weight: bold; font-size: 12px; text-align: left;"/>
+			<label value="${sep1}" style="color: #000000; font-style: italic; font-weight: bold; font-size: 12px; text-align: left;"/>
+			<label value="${path1}" style="color: #00A3EF; font-style: italic; font-weight: bold; font-size: 12px; text-align: left;"/>
+			<label value="${sep2}" style="color: #000000; font-style: italic; font-weight: bold; font-size: 12px; text-align: left;"/>
+			<label value="${path2}" style="color: #00A3EF; font-style: italic; font-weight: bold; font-size: 12px; text-align: left;"/>
+		</hbox>
+	</window>
+	
+	<window id="mainerror" sclass="mainerror" border="none" width="60%" closable="true" visible="false" onCreate="setErrorLabel();">
+		<label id="errorlbl"/>
+		<label value="${close }" sclass="link" onClick="mainerror.setVisible(false)"/>
+	</window>
+	
+	<zscript>
+		public void setErrorLabel(){
+			String error = Executions.getCurrent().getParameter("error");
+			if(error != null){
+				String showerror = (String)Sessions.getCurrent().getAttribute("showerror");
+				if("1".equals(showerror))
+				{
+					int errorcode = Integer.parseInt(error);
+					Label errorlbl = (Label)mainerror.getFellow("errorlbl");
+					errorlbl.setValue(eu.ehealth.ErrorDictionary.getErrorLabel(errorcode));
+					mainerror.setVisible(true);
+					Sessions.getCurrent().setAttribute("showerror",null);
+				}
+			}
+		}
+	</zscript>
+</zk>

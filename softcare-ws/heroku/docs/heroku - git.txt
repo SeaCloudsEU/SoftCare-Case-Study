@@ -1,0 +1,125 @@
+HEROKU - WINDOWS CONSOLE ------------------------------------------------------------------------------------------------------------------------------------------------
+
+clave: scss852 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+	LOG INTO HEROKU:
+		1. heroku login
+		
+		COMMANDS:
+			heroku apps:info  	--> get detailed info of a project when executed in a local project folder
+			heroku apps:info --app e-health-gui
+			
+			heroku config 		--> get config vars from an application when executed in a local project folder
+								--> CLEARDB_DATABASE_URL var from MySQL Service 
+								
+			heroku logs -n 800	--> get logs from an application when executed in a local project folder
+			heroku logs --app e-health-gui -n 800
+			
+			migrate application to europe servers:
+			heroku fork -a e-health-ws e-health-eu-ws --region eu
+			
+			http://mikeslinn.blogspot.com.es/2013/02/command-line-sbt-on-heroku-dyno.html
+			heroku run bash
+			$ pwd
+			$ ls -alF
+		
+		
+	HOW TO GET PROJECT FROM HEROKU (when app is created in heroku web application):
+		0. git init
+		
+		1. Link local folder to heroku app:
+			-> git remote add heroku git@heroku.com:e-health-eu-ws.git      // git remote add heroku git@heroku.com:e-health-gui.git
+			-> heroku git:remote -a e-health-ws
+	
+		2. git clone git@heroku.com:pruebas-wars.git -o heroku
+
+
+	HOW TO UPLOAD AND DEPLOY A WAR IN HEROKU:
+		1. heroku plugins:install https://github.com/heroku/heroku-deploy
+
+		2. heroku deploy:war --war <path_to_war_file> --app <app_name>
+
+			--> heroku deploy:war --war C:\PROYECTOS\HEROKU\cxf-hibernate-ws.war --app e-health-eu-ws
+				heroku deploy:war --war C:\PROYECTOS\HEROKU\WebGUI_v3.war --app e-health-gui
+			
+			--> heroku deploy:war --war C:\PROYECTOS\HEROKU\cxf-hibernate.war --app aladdin-cloud-services
+			--> heroku deploy:war --war C:\PROYECTOS\HEROKU\axis2.war --app pruebas-axis2-war
+			--> heroku deploy:war --war C:\PROYECTOS\HEROKU\WebGUI.war --app aladdin-cloud
+
+	COMMIT APPLICATION FILES TO HEROKU
+		1. mvn package
+
+		2. git init
+		   git add .
+		   git commit -m "init"
+
+		3. git push heroku master
+		
+		
+		
+		
+		
+		Customizing the JDK
+		
+		https://devcenter.heroku.com/articles/customizing-the-jdk
+		
+		$ echo "java.runtime.version=1.7" > system.properties
+		$ git add system.properties
+		$ git commit -m "JDK 7"
+	
+	
+HEROKU - EHEALTH DEPLOYMENT -------------------------------------------------------------------------------------------------------------------------------------------
+
+	1. WebGUI --> java 1.6
+	2. Web services (cxf) --> hibernate config file
+
+	
+	
+HEROKU - ADD-ONS -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+	SQL DATABASE 
+
+	ACTUAL - RUNNING --> EUROPE version
+
+	CLEARDB_DATABASE_URL: mysql://b5328504c7330a:d1544c6e@eu-cdbr-west-01.cleardb.com/heroku_52c9cbef6918e0d?reconnect=true
+
+	Username:	b5328504c7330a
+	Password:	d1544c6e
+	Host: eu-cdbr-west-01.cleardb.com
+	Schema: heroku_52c9cbef6918e0d
+	------------------------------------
+
+	EMAIL SERVIC 
+
+	SMTP server:	smtp.sendgrid.net
+	Username: 		app21535939@heroku.com
+	Password:		Your Password
+	------------------------------------
+	
+	
+	
+
+	C:\PROYECTOS\HEROKU\apps\e-health-eu-ws>heroku config
+	=== e-health-eu-ws Config Vars
+	CLEARDB_DATABASE_URL:        mysql://b5328504c7330a:d1544c6e@eu-cdbr-west-01.cleardb.com/heroku_52c9cbef6918e0d?reconnect=true
+	DATABASE_URL:                postgres://ngqmdlkcqtlnhi:QMZa0zzRHitwIbRD2eDJ3r4tJx@ec2-54-228-227-68.eu-west-1.compute.am
+	azonaws.com:5432/dcom54t5igf36v
+	HEROKU_POSTGRESQL_IVORY_URL: postgres://ngqmdlkcqtlnhi:QMZa0zzRHitwIbRD2eDJ3r4tJx@ec2-54-228-227-68.eu-west-1.compute.am
+	azonaws.com:5432/dcom54t5igf36v
+	JAVA_OPTS:                   -Xmx384m -Xss512k -XX:+UseCompressedOops
+	PGBACKUPS_URL:               https://438198:8vmpj41ldau90uxbvjb8hqyx2@pgbackups.herokuapp.com/client
+
+	
+	
+GIT -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	ADD EXISTING PROJECT:
+	http://befused.com/git/existing-project-github
+	
+	1. cd my_project
+	2. git init
+	3. git add *
+	4. git commit -m "First commit"
+	(5. git remote add origin https://rsucasas@bitbucket.org/rsucasas/atos_healthcare_desktop.git)
+	6. git push origin master

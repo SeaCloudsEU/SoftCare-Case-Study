@@ -1,5 +1,4 @@
 # ATOS Web Services application
-![Ehealth Web Services component](https://bytebucket.org/atos_roisucasas/atos_healthcare_webservices/raw/ef9e9ff30eed128503e9578c9ce238e1d6497798/resources/EhealthWSapp.png?token=a2645902acb175037946de384096dd5a764b7d03)
 #### Security options:
 Communications between: other applications --- _web services_
 >1. Without WS-Security

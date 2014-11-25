@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:jaxws="http://cxf.apache.org/jaxws" 
+		xmlns:cxf="http://cxf.apache.org/core"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+			http://cxf.apache.org/jaxws 
+			http://cxf.apache.org/schemas/jaxws.xsd
+			http://cxf.apache.org/core 
+			http://cxf.apache.org/schemas/core.xsd">
+
+	<!-- Load CXF modules from cxf.jar //////////////////////////////////// -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+	<!-- Endpoints configuration ////////////////////////////////////////// -->
+	
+	<!-- //////////////////////// ENDPOINT CONFIGURATION ////////////////// -->
+	<!-- 
+		- Services used by WebGUI (aladdin web) application.
+		- Without ws-security.
+	-->
+	<!--
+	<jaxws:endpoint id="StorageComponent" implementor="eu.ehealth.StorageComponentImpl" address="/StorageComponent">
+	</jaxws:endpoint>
+	
+	
+	<jaxws:endpoint id="ServicesComponent" implementor="eu.ehealth.ServicesComponentImpl" address="/ServicesComponent">
+	</jaxws:endpoint>
+	-->
+	<!-- ////////////////////////////////////////////////////////////////// -->
+	
+
+	
+	<!-- //////////////////////// ENDPOINT CONFIGURATION ////////////////// -->
+	<!-- //////////////////////// WS-SECURITY : Sign / Encrypt //////////// -->
+	<!-- 
+		- Services used by WebGUI (aladdin web) application.
+		+ Endpoint with ws-security : messages are signed and encrypted:
+			- jaxws:endpoint id="StorageComponent"
+		+ Interceptor for decrypting and validating the signature of the request
+			- bean id="WSSecurityServiceRequestInterceptor"
+		+ Interceptor for timestamping, signing and encrypting the response
+			- bean id="WSSecurityServiceResponseInterceptor"
+	-->
+	<!-- -->
+	<jaxws:endpoint id="StorageComponent" implementor="eu.ehealth.StorageComponentImpl" address="/StorageComponent">
+		<jaxws:outInterceptors>
+			<ref bean="WSSecurityServiceResponseInterceptor"></ref>
+		</jaxws:outInterceptors>
+		<jaxws:inInterceptors>
+			<ref bean="WSSecurityServiceRequestInterceptor"></ref>
+		</jaxws:inInterceptors>
+	</jaxws:endpoint>
+	
+	
+	<jaxws:endpoint id="ServicesComponent" implementor="eu.ehealth.ServicesComponentImpl" address="/ServicesComponent">
+	</jaxws:endpoint>
+
+	<!-- bean id="WSSecurityServiceRequestInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor" -->
+	<bean id="WSSecurityServiceRequestInterceptor" class="eu.ehealth.security.EHealthWSS4JInInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="Timestamp Signature Encrypt" />
+				<entry key="signaturePropFile" value="cryptoIn.properties" />
+				<entry key="decryptionPropFile" value="cryptoOut.properties" />
+				<entry key="passwordCallbackClass"
+					value="eu.ehealth.security.ServerPasswordCallback" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="WSSecurityServiceResponseInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="Timestamp Signature Encrypt" />
+				<entry key="user" value="aliasws" />
+				<entry key="signaturePropFile" value="cryptoOut.properties" />
+				<entry key="encryptionPropFile" value="cryptoIn.properties" />
+				<entry key="encryptionUser" value="useReqSigCert" />
+				<entry key="passwordCallbackClass"
+					value="eu.ehealth.security.ServerPasswordCallback" />
+				<entry key="signatureParts"
+					value="{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;{Element}{http://schemas.xmlsoap.org/soap/envelope/}Body" />
+				<entry key="encryptionParts"
+					value="{Content}{http://schemas.xmlsoap.org/soap/envelope/}Body" />
+				<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+			</map>
+		</constructor-arg>
+	</bean>
+	<!-- -->
+	<!-- ////////////////////////////////////////////////////////////////// -->
+	
+	
+	
+	<!-- //////////////////////// ENDPOINT CONFIGURATION ////////////////// -->
+	<!-- //////////////////////// WS-SECURITY ///////////////////////////// -->
+	<!-- 
+		- Services used by aladdin client (.NET) application.
+	-->
+	<!-- -->
+	<jaxws:endpoint id="StorageComponent_nosecurity" implementor="eu.ehealth.StorageComponentImpl" address="/StorageComponent_ns">
+	</jaxws:endpoint>
+
+	<bean id="aladdinPasswordCallback" class="eu.ehealth.security.AladdinClientPasswordCallback"/>
+	<!-- -->
+	<!-- ////////////////////////////////////////////////////////////////// -->
+	
+	
+	
+	<!-- Other features /////////////////////////////////////////////////// -->
+
+	<!-- //////////////////////// LOGGING - SOAP MESSAGES ///////////////// -->
+	<!-- 
+		- cxf services logging.
+		- add file in 'META-INF/cxf/org.apache.cxfLogger' with content 'org.apache.cxf.common.logging.Log4jLogger'
+		- org.apache.cxf.interceptor.LoggingOutInterceptor
+	-->
+	<!-- -->
+	<bean id="abstractLoggingInterceptor" abstract="true">
+        <property name="prettyLogging" value="true" />
+    </bean>
+    <bean id="loggingInInterceptor" class="eu.ehealth.util.CxfWSInterceptor" parent="abstractLoggingInterceptor" />
+    <bean id="loggingOutInterceptor" class="eu.ehealth.util.CxfWSOutInterceptor" parent="abstractLoggingInterceptor" />
+
+    <cxf:bus>
+        <cxf:inInterceptors>
+            <ref bean="loggingInInterceptor" />
+        </cxf:inInterceptors>
+        <cxf:outInterceptors>
+            <ref bean="loggingOutInterceptor" />
+        </cxf:outInterceptors>
+        <cxf:outFaultInterceptors>
+            <ref bean="loggingOutInterceptor" />
+        </cxf:outFaultInterceptors>
+        <cxf:inFaultInterceptors>
+            <ref bean="loggingInInterceptor" />
+        </cxf:inFaultInterceptors>
+    </cxf:bus>
+    <!-- -->
+    <!-- ////////////////////////////////////////////////////////////////// -->
+	
+	
+	
+	<!-- //////////////////////// DATABASE ENCRYPTION ///////////////////// -->
+	<!--
+		- jasypt library : add dependency to pom.xml file.
+		- modify hibernate xml files  (*.hbm.xml) in order to configure the encrypted fields.
+			Example:
+				...
+				<typedef name="encrypted" class="org.jasypt.hibernate.type.EncryptedStringType">
+	      			<param name="encryptorRegisteredName">strongHibernateStringEncryptor</param>
+	   			</typedef>
+	   			...
+	   			<property name="City" type="encrypted">
+					<column name="City" />
+				</property>
+				...
+	-->
+	<!--
+	<bean id="strongEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+	    <property name="algorithm">
+	        <value>PBEWithMD5AndTripleDES</value>
+	    </property>
+	    <property name="password">
+	        <value>jasypt</value>
+	    </property>
+	</bean>
+	
+	<bean id="hibernateStringEncryptor" class="org.jasypt.hibernate.encryptor.HibernatePBEStringEncryptor">
+	    <property name="registeredName">
+	        <value>strongHibernateStringEncryptor</value>
+	    </property>
+	    <property name="encryptor">
+	        <ref bean="strongEncryptor" />
+	    </property>
+	</bean>
+  	-->
+  	<!--
+	<bean id="strongEncryptor" class="org.jasypt.encryption.pbe.PooledPBEStringEncryptor">
+	    <property name="algorithm">
+	        <value>PBEWithMD5AndTripleDES</value>
+	    </property>
+	    <property name="password">
+	        <value>jasypt</value>
+	    </property>
+	    <property name="poolSize">
+	        <value>4</value>
+	    </property>
+	</bean>
+	-->
+	<!-- ////////////////////////////////////////////////////////////////// -->
+	
+</beans>

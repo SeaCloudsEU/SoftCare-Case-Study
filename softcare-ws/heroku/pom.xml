@@ -1,0 +1,171 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>cxf-hibernate-ws</groupId>
+	<artifactId>cxf-hibernate-ws</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<name>CXF-hibernate project using spring configuration</name>
+	<description>CXF-hibernate project using spring configuration</description>
+
+	<dependencies>
+		<!-- CXF // WS-SECURITY -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<version>${cxf-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ws.security</groupId>
+			<artifactId>wss4j</artifactId>
+			<version>${wss4j-version}</version> 
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-ws-security</artifactId>
+			<version>${cxf-version}</version>
+		</dependency>
+		<!--
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-bundle</artifactId>
+			<version>${cxf-version}</version>
+		</dependency>
+		-->
+		<!-- MYSQL -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql-version}</version>
+		</dependency>
+		<!-- HIBERNATE -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>${hibernate-version}</version>
+		</dependency>
+		<!-- database encryption -->
+		<dependency>
+			<groupId>org.jasypt</groupId>
+			<artifactId>jasypt</artifactId>
+			<version>${jasypt-version}</version>
+		</dependency>
+		<!-- SPRING -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring-version}</version>
+		</dependency>
+		<!-- EMAIL -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>${javax-mail-version}</version>
+		</dependency>
+		<!-- OTHERS -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>${commons-configuration-version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>cxf-hibernate-ws</finalName>
+	
+		<!-- pluginManagement -->
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${java-version}</source>
+						<target>${java-version}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-eclipse-plugin</artifactId>
+					<configuration>
+						<projectNameTemplate>[artifactId]-[version]</projectNameTemplate>
+						<wtpmanifest>true</wtpmanifest>
+						<wtpapplicationxml>true</wtpapplicationxml>
+						<wtpversion>2.0</wtpversion>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.3</version>
+					<executions>
+						<execution>
+							<id>copy</id>
+							<phase>package</phase>
+							<goals><goal>copy</goal></goals>
+							<configuration>
+								<artifactItems>
+									<artifactItem>
+										<groupId>com.github.jsimone</groupId>
+										<artifactId>webapp-runner</artifactId>
+										<version>7.0.40.0</version>
+										<!--outputDirectory>${project.build.directory}/alternateLocation</outputDirectory-->
+										<destFileName>webapp-runner.jar</destFileName>
+									</artifactItem>
+								</artifactItems>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		<!-- /pluginManagement -->
+	</build>
+
+	<properties>
+		<!-- JAVA -->
+		<java-version>1.6</java-version>
+		
+		<!-- ENCODING -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		
+		<!-- ARTIFACTS VERSION -->
+		<!-- CXF - 2.5.11 // 2.7.8 // 2.6.11 -->
+		<cxf-version>2.7.8</cxf-version> 
+		<!-- HIBERNATE 3.6.0.Final for JASYPT // 4.3.0.Final -->
+		<hibernate-version>3.6.0.Final</hibernate-version> 
+		<!-- WSS4J - 1.6.13 // 1.5.12 -->
+		<wss4j-version>1.6.12</wss4j-version>
+		<!-- MYSQL -->
+		<mysql-version>5.1.10</mysql-version>
+		<!-- SPRING // 2.5.6 // 2.5.6.SEC03 // 3.2.6.RELEASE -->
+		<spring-version>3.2.6.RELEASE</spring-version>
+		<!-- JASYPT : MySQL encryption //  1.8 // 1.9.2 -->
+		<jasypt-version>1.8</jasypt-version>
+		<!-- EMAIL -->
+		<javax-mail-version>1.4.7</javax-mail-version>
+		<!-- OTHERS -->
+		<log4j-version>1.2.16</log4j-version>
+		<commons-configuration-version>1.6</commons-configuration-version>
+	</properties>
+
+</project>

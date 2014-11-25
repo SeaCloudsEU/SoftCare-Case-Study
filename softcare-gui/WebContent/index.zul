@@ -1,0 +1,57 @@
+<?page contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<zk>
+	<include src="/inc/header.zul"/>
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		
+		
+		String title = Labels.getLabel("home.title");
+		page.setTitle(title);
+		String newprof = Labels.getLabel("home.newprofile");
+		Boolean isadmin = (Boolean)Sessions.getCurrent().getAttribute("isadmin");
+	</zscript>
+	<style dynamic="true">
+		.gridnolayout tr.z-row td.z-row-inner, tr.z-row .z-cell,div.z-grid{
+			border: none;
+			overflow:hidden;
+			zoom: 1;
+			background: white; 
+			border-top: none;
+			border-left: none;
+			border-right: none;
+			border-bottom: none; 
+		}
+	</style>
+	<window width="800px" sclass="centerwin" border="none">
+		<grid sclass="gridnolayout" >
+			<columns>
+				<column width="33%" align="center"/>
+				<column width="33%" align="center"/>
+				<column width="33%" align="center"/>
+			</columns>
+			<rows>
+				<row height="200px">
+					<button href="/patients/index.zul" label="Go to Users" height="180px" width="80%" image="/inc/icons/users.png"/>
+					<button href="/carers/index.zul" label="Caregivers, social workers" height="180px" width="80%" image="/inc/icons/carer.png"/>
+					<button href="/clinicians/index.zul" label="Go to Clinicians" height="180px" width="80%" image="/inc/icons/clinician.png"/>
+				</row>
+				<row height="200px">
+					<button href="/qm/index.zul" label="Open question manager" height="180px" width="80%" image="/inc/icons/qm.png"/>
+					<button href="/extsrv/index.zul" label="Manage external services" height="180px" width="80%" image="/inc/icons/services.png"/>
+					
+					<button  href="/warnings/index.zul" label="View clinical warnings" 
+						height="180px" width="80%" image="/inc/icons/warning.png" if="${!isadmin }"/>
+					<button  href="/administration/index.zul" label="Administration" 
+						height="180px" width="80%" image="/inc/icons/Admin-icon.png" if="${isadmin }"/>
+				</row>
+				<row height="200px" if="${!isadmin }">
+					<button  href="/cms/index.zul" label="Content Management" 
+						height="180px" width="80%" image="/inc/icons/content_management.png"/>
+				</row>
+			</rows>
+		</grid>
+	</window>
+	<include src="/inc/footer.zul"/>
+</zk>

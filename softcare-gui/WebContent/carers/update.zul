@@ -1,0 +1,37 @@
+<?page contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<zk>
+	<include src="/inc/header.zul"/>
+	<window id="paintitblack"></window>
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		import eu.ehealth.ws_client.StorageComponentImpl;
+		import eu.ehealth.ws_client.xsd.Carer;
+		import eu.ehealth.controllers.CarerControllerWindow;
+		
+		
+		String title = Labels.getLabel("carers.update.title");
+		page.setTitle(title);	
+		
+		String updid = (String)Executions.getCurrent().getParameter("carerid");
+		StorageComponentImpl proxy = new StorageComponentImpl();
+		Session ses = Sessions.getCurrent();
+		String userid = (String)ses.getAttribute("userid");
+		try
+		{
+			Carer userobj = proxy.getCarer(updid,userid);
+			CarerControllerWindow window = new CarerControllerWindow(userobj, false);
+			((Window)page.getFellow("paintitblack")).appendChild(window);
+			window.setTitle(title);
+			window.setId("carerform");
+			window.setSclass("centerwin");
+			window.setWidth("800px");
+			window.doEmbedded();
+		}
+		catch(Exception re){
+			re.printStackTrace();
+		}
+	</zscript>
+	<include src="/inc/footer.zul"/>
+</zk>

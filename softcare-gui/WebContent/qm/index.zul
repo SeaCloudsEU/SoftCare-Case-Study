@@ -1,0 +1,117 @@
+<?page contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+
+<zk>
+	<include src="/inc/header.zul"/>
+	
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		import eu.ehealth.ws_client.StorageComponentImpl;
+		import eu.ehealth.ws_client.xsd.PatientInfo;
+		import eu.ehealth.ws_client.xsd.SearchCriteria;
+		import eu.ehealth.ws_client.xsd.SystemParameter;
+		
+		
+		String title = Labels.getLabel("qm.title");
+		String newq = Labels.getLabel("qm.new");
+		String idstr  = Labels.getLabel("common.id");
+		String version = Labels.getLabel("qm.new.version");
+		String qtitle = Labels.getLabel("qm.new.desc");
+		String updmsg = Labels.getLabel("common.update");
+		String delmsg = Labels.getLabel("common.delete");
+		
+		page.setTitle(title);
+		
+		StorageComponentImpl proxy = new StorageComponentImpl();
+		String userid = (String)Sessions.getCurrent().getAttribute("userid");
+		eu.ehealth.ws_client.xsd.QuestionnaireInfo[] qlist = null;
+		Boolean isadmin = (Boolean)Sessions.getCurrent().getAttribute("isadmin");
+		try
+		{
+			qlist = proxy.listOfQuestionnairesArr(eu.ehealth.SystemDictionary.getLocale(),userid);
+			eu.ehealth.SystemDictionary.webguiLog("INFO", "List SIZE: "+qlist.length);
+		}
+		catch(java.rmi.RemoteException re){
+			re.printStackTrace();
+		}
+	</zscript>
+	
+	<window border="none" width="800px" sclass="centerwin" id="qmwin" use="eu.ehealth.controllers.qm.QuestionnaireIndexWindow">
+		<vbox>
+			<button label="${newq}" href="/qm/form.zul"  image="/inc/icons/add.gif">
+				<attribute name="onCreate">
+					if(isadmin){
+						self.setDisabled(true);
+					}
+				</attribute>
+			</button>
+			<zscript>
+				import java.lang.Integer;
+				
+				class IntegerComparator implements Comparator{
+					private boolean ascending = true;
+					
+					public IntegerComparator(boolean asc){
+						this.ascending = asc;
+					}
+					
+					public int compare(Object o1, Object o2){
+						Row rw1 = (Row)o1;
+						Row rw2 = (Row)o2;
+						String id1 = (String)((Label)rw1.getChildren().get(0)).getValue();
+						String id2 = (String)((Label)rw2.getChildren().get(0)).getValue();
+						Integer iid1 = Integer.parseInt(id1);
+						Integer iid2 = Integer.parseInt(id2);
+						return this.ascending ? iid1.compareTo(iid2) : iid2.compareTo(iid1);
+						
+					}
+				}
+				
+				IntegerComparator asc = new IntegerComparator(true);
+				IntegerComparator desc = new IntegerComparator(false);
+			</zscript>
+			
+			<window id="mainerror" sclass="mainerror" border="none" width="50%" closable="true" visible="false" onCreate="setErrorLabel();">
+				<label id="errorlbl"/>
+			</window>
+			
+			<grid mold="paging" pageSize="10">
+				<columns>
+					<column width="75px" label="${idstr }" sortAscending="${asc }" sortDescending="${desc }" sort="des" style="font-weight: bold;"/>
+					<column width="85px" label="${version }" sort="auto" style="font-weight: bold;"/>
+					<column label="${qtitle }" sort="auto" style="font-weight: bold;"/>
+					<column width="65px" align="center" if="${!isadmin }" />
+					<column width="65px" align="center" if="${!isadmin }" />
+					<column width="65px" align="center" />
+				</columns>
+				<rows>
+				<row forEach="${qlist }" id="${each.ID }">
+					<label value="${each.ID }"/>
+					<label value="${each.version }"/>
+					<label value="${each.title }"/>
+					<label if="${!isadmin }" value="${updmsg }" sclass="link" onClick="qmwin.updateQuestionnaire(self.getParent().getId())"/>
+					<label if="${!isadmin }" value="Translate" sclass="link" onClick="qmwin.translateQuestionnaire(self.getParent().getId())"/>
+					<label value="${delmsg }" sclass="link" onClick="qmwin.removeQuestionnaire(self.getParent().getId())"/>
+				</row>
+				</rows>
+			</grid>
+			
+			<zscript>
+				public void setErrorLabel(){
+					String error = Executions.getCurrent().getParameter("error");
+					if(error != null)
+					{
+						int errorcode = Integer.parseInt(error);
+						Label errorlbl = (Label)mainerror.getFellow("errorlbl");
+						errorlbl.setValue(eu.ehealth.ErrorDictionary.getErrorLabel(errorcode));
+						mainerror.setVisible(true);
+						Sessions.getCurrent().setAttribute("showerror",null);
+					}
+				}
+			</zscript>
+		</vbox>
+	</window>
+
+	<include src="/inc/footer.zul"/>
+</zk>

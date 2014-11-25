@@ -1,0 +1,80 @@
+<?page id="pageqm" contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+
+<zk>
+	<include src="/inc/header.zul"/>
+	
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		
+		
+		String title = Labels.getLabel("qm.new");
+		String btnyesno = Labels.getLabel("qm.new.yesno");
+		String btnmany = Labels.getLabel("qm.new.manyansw");
+		String btnfree = Labels.getLabel("qm.new.open");
+		String questid = Labels.getLabel("qm.new.id");
+		String versionl = Labels.getLabel("qm.new.version");
+		String descl = Labels.getLabel("qm.new.desc");
+		String questionsl = Labels.getLabel("qm.new.questions");
+		String idl = Labels.getLabel("qm.new.questions.id");
+		String typel = Labels.getLabel("qm.new.questions.type");
+		String textl = Labels.getLabel("qm.new.questions.text");
+		String ansl = Labels.getLabel("qm.new.questions.answers");
+		String errorno = Labels.getLabel("error.no.empty");
+		
+		page.setTitle(title);
+	</zscript>
+	
+	<window id="qm_sketch" sclass="centerwin" width="800px" use="eu.ehealth.qm.QuestionnaireTranslateWindow">
+		<vbox>
+			<label value="${title}" sclass="newitem" />
+			<grid>
+				<columns>
+					<column align="right" width="100px" valign="top"/>
+					<column align="left"/>
+				</columns>
+				<rows id="rows_questions">
+					<row>
+						<label value="Language"/>
+						<listbox mold="select" id="trans_locale" onSelect="qm_sketch.changeSelectedLocale()">
+							<listitem value="none" label="Select one" selected="true"/>
+						</listbox>
+					</row>
+					<row>
+						<label value="${versionl}"/>
+						<hbox>
+							<textbox id="trans_version" width="300px"/>
+							<textbox id="trans_qid" visible="false"/>
+						</hbox>
+					</row>
+					<row>
+						<label value="${descl}"/>
+						<hbox>
+							<textbox id="trans_title_original" readonly="true" width="300px"/>
+							<textbox id="trans_title" width="300px"/>
+						</hbox>
+					</row>
+				</rows>
+			</grid>
+			<button label="Save Translation" onClick="qm_sketch.saveTranslation()"/>
+		</vbox>
+		<window id="trans_alert" closable="false" visible="false" title="No language detected" border="normal" position="center">
+			<vbox align="center">
+				<label value="You must select a valid locale before trying to save the translation!"/>
+				<separator height="3px"/>
+				<label value="Otherwise you could lost all your work"/>
+				<button label="Close" onClick="trans_alert.setVisible(false)"/>
+			</vbox>
+		</window>
+	</window>
+	
+	<zscript>
+		String q = (String)Executions.getCurrent().getParameter("q");
+		if(q!=null){
+			qm_sketch.translateQuestionnaire(q);
+		}
+	</zscript>
+	
+	<include src="/inc/footer.zul"/>
+</zk>

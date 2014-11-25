@@ -1,0 +1,264 @@
+
+	INDEX
+		1. SSL / TLS Configuration : Servers (Tomcat 7) - Client (java apps)
+		2. SSL / TLS Configuration : MUTUAL AUTHENTICATION : Servers (Tomcat 7) - Client (java apps)
+			- CXF Web Services Client Configuration
+		3. KEYSTORE / TRUSTSTORE Reference
+		4. CREATING CERTIFICATES WITH java tools
+		5. OTHER STUFF - TRASH - TMP
+		
+----------------------------------------------------------------------------------------------------------------------------------
+1. SSL / TLS Configuration : Servers (Tomcat 7) - Client (java apps)
+----------------------------------------------------------------------------------------------------------------------------------
+	REQUIREMENTS
+		- OpenSSL
+	
+	A. CREATE CERTIFICATE
+	
+		1. Generate private key and certificate signing request
+			
+			$ openssl genrsa -des3 -passout pass:x -out SERVER.PASS.KEY 2048
+
+			$ openssl rsa -passin pass:x -in SERVER.PASS.KEY -out SERVER.KEY
+			
+			// writing RSA key - Remove 'server.pass.key'
+			$ rm SERVER.PASS.KEY
+			$ openssl req -new -key SERVER.KEY -out SERVER.CSR
+
+				--> password: 'tomcat'
+			
+		2. Generate SSL certificate
+			
+			$ openssl x509 -req -days 365 -in SERVER.CSR -signkey SERVER.KEY -out SERVER.CRT
+			
+			==> SERVER.CRT and SERVER.KEY can be used in a server to enable HTTPS
+		
+		3. [OPTIONAL] IMPORT SSL certificate to a keystore
+		
+				--> Default password of the java keystore: 'changeit'
+		
+				--> keytool -import -noprompt -trustcacerts -alias localhost /
+					-file C:\PROYECTOS\CloudFoundry\keys_folder\server.crt -keystore "%JAVA_HOME%/jre/lib/security/cacerts" -storepass <Password>
+					
+				--> keytool -import -v -trustcacerts -alias server-alias -file server.cer -keystore cacerts.jks -keypass changeit -storepass changeit
+		
+		
+	B. CONFIGURATION - TOMCAT - HTTPS
+	   server.crt + http://www.sslshopper.com/article-most-common-java-keytool-keystore-commands.html
+	
+		1. Tomcat - server.xml
+		   Configure Tomcat server to use SSL / TLS 
+		   
+		   1.1. With ARP:
+				...
+				<Connector port="8443" scheme="https" secure="true" 
+					SSLEnabled="true" 
+					SSLCertificateFile="..\keystore\SERVER.CRT" 
+					SSLCertificateKeyFile="..\keystore\SERVER.KEY" 
+					SSLPassword="tomcat" 
+					SSLProtocol="TLSv1" />
+				...
+				
+			1.2. 'NORMAL':
+			
+				...
+				<Connector
+				   protocol="HTTP/1.1"
+				   port="8443" maxThreads="200"
+				   scheme="https" secure="true" SSLEnabled="true"
+				   keystoreFile="C:\Users\A572832\git\webgui\WebGUI_v2\src\KEYSTORE.JKS" 
+				   keystorePass="password"
+				   clientAuth="false" sslProtocol="TLS"/>
+				...
+			
+			==> HTTPS IS ENABLED IN TOMCAT SERVER
+			
+			==> Because we use a self-signed certificate, we have to configure the java client applications so that they can access the https server
+	
+	
+	C. CONFIGURATION - JAVA	CLIENT APPLICATIONS
+	
+		1. Generate a Java keystore and key pair
+			
+			keytool -genkey -alias mydomain -keyalg RSA -keystore KEYSTORE.JKS -keysize 2048
+			
+				--> password = 'password'
+			
+		2. Import a root or intermediate CA certificate to an existing Java keystore
+		
+			keytool -import -trustcacerts -alias root -file SERVER.CRT -keystore KEYSTORE.JKS
+					
+		3. [OPTIONAL] Check which certificates are in a Java keystore
+			
+			keytool -list -v -keystore keystore.jks
+			
+		4. Client application that connects to the ssl server
+		
+			...
+			System.setProperty("javax.net.ssl.keyStore", "C:\\Users\\A572832\\git\\webgui\\WebGUI_v2\\src\\KEYSTORE.JKS");
+			System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\A572832\\git\\webgui\\WebGUI_v2\\src\\KEYSTORE.JKS");
+			System.setProperty("javax.net.ssl.keyStorePassword", "password");
+			System.setProperty("javax.net.ssl.trustStorePassword", "password");
+			...
+		
+			==> JAVA CLIENT APPLICATION CAN CONNECT TO THE HTTPS SERVER
+		
+		
+----------------------------------------------------------------------------------------------------------------------------------
+2. SSL / TLS Configuration : MUTUAL AUTHENTICATION : Servers (Tomcat 7) - Client (java apps)
+----------------------------------------------------------------------------------------------------------------------------------
+	
+	A.
+	
+		To implement, ensure you have the java home bin directory on your path (that's where the keytool executable lives), and do the following 
+		(vary passwords/locations/periods as required) on the client:
+			# create keystore and generate client key pair
+			keytool -genkey -alias client -keyalg RSA -validity 3650 -keystore client_keystore.jks -storepass password - keypass password
+
+			# export client public certificate
+			keytool -export -alias client -keystore client_keystore.jks -storepass password -file client.cer
+			
+		Similarly, on the server:
+			# create keystore and generate server key pair
+			keytool -genkey -alias server -keyalg RSA -validity 3650 -keystore server_keystore.jks -storepass password - keypass password
+
+			# export server public certificate
+			keytool -export -alias server -keystore server_keystore.jks -storepass password -file server.cer
+
+		Copy the client certificate to the server and vice-versa.  Then import the server certificate to the client's truststore:
+			# create truststore and import server certificate
+			keytool -import -alias server -keystore client_truststore -storepass password -file server.cer
+			
+		And on the server:
+			# create truststore and import client certificate
+			keytool -import -alias client -keystore server_truststore -storepass password -file client.cer			
+
+	
+	B. CONFIGURATION - TOMCAT - HTTPS
+	
+		1. Tomcat - server.xml
+		   Configure Tomcat server to use SSL / TLS 
+	
+			1.1. 'NORMAL':
+	
+				<Connector
+				   protocol="HTTP/1.1"
+				   port="8443" maxThreads="200"
+				   scheme="https" secure="true" SSLEnabled="true"
+				   keystoreFile="C:\Users\A572832\git\webgui\WebGUI_v2\src\server_keystore.jks" 
+				   keystorePass="password"
+				   truststoreFile="C:\Users\A572832\git\webgui\WebGUI_v2\src\server_truststore" 
+				   truststorePass="password"
+				   clientAuth="false" sslProtocol="TLS"/>
+		
+	C. CXF CLIENT CONFIGURATION
+	
+		
+		
+
+----------------------------------------------------------------------------------------------------------------------------------
+3. KEYSTORE / TRUSTSTORE Reference
+----------------------------------------------------------------------------------------------------------------------------------
+
+	Import Trusted Certificate
+
+		By default the Java system truststore is at $JAVA_HOME/jre/lib/security/cacerts. The certificate to be imported MUST 
+		be a DER-encoded file. If the contents of the certificate file are binary, it's likely DER-encoded; if the file begins 
+		with the text ---BEGIN CERTIFICATE---, it is PEM-encoded and needs to be converted to DER encoding. The following example 
+		demonstrates a conversion command using OpenSSL.
+		
+		Convert PEM-encoded Cert to DER Encoding
+
+			openssl x509 -in etc/pki/incommon-root-cert.pem -out tmp/incommon-root-cert.der -outform DER
+		
+	Once the certificate file is properly in the DER-encoded format, it may be imported using the keytool command.
+
+		Keytool Import Command
+		
+			keytool -import -keystore $JAVA_HOME/jre/lib/security/cacerts -file tmp/incommon-root-cert.der -alias incommon
+			
+		List Trusted Certificates
+
+			keytool -v -list -keystore $JAVA_HOME/jre/lib/security/cacerts
+			
+----------------------------------------------------------------------------------------------------------------------------------
+4. CREATING CERTIFICATES WITH java tools
+----------------------------------------------------------------------------------------------------------------------------------		
+			
+	To implement, ensure you have the java home bin directory on your path (that's where the keytool executable lives), and do the following 
+	(vary passwords/locations/periods as required) on the client:
+		# create keystore and generate client key pair
+		keytool -genkey -alias client -keyalg RSA -validity 3650 -keystore .\client.keystore -storepass abcd1234 - keypass abcd1234
+
+		# export client public certificate
+		keytool -export -alias client -keystore .\client.keystore -storepass abcd1234 -file .\client.cer
+		
+	Similarly, on the server:
+		# create keystore and generate server key pair
+		keytool -genkey -alias server -keyalg RSA -validity 3650 -keystore .\server.keystore -storepass abcd1234 - keypass abcd1234
+
+		# export server public certificate
+		keytool -export -alias server -keystore .\server.keystore -storepass abcd1234 -file .\server.cer
+
+	Copy the client certificate to the server and vice-versa.  Then import the server certificate to the client's truststore:
+		# create truststore and import server certificate
+		keytool -import -alias server -keystore .\client.truststore -storepass abcd1234 -file .\server.cer
+		
+	And on the server:
+		# create truststore and import client certificate
+		keytool -import -alias client -keystore .\server.truststore -storepass abcd1234 -file .\client.cer			
+			
+			
+----------------------------------------------------------------------------------------------------------------------------------
+5. OTHER STUFF - TRASH - TMP
+----------------------------------------------------------------------------------------------------------------------------------
+
+	Self-Signed Certificates
+
+		1. generate the server’s self-signed certificate
+				
+				keytool -genkey -alias localhost  -keyalg RSA -keystore C:\PROYECTOS\CloudFoundry\keys_folder\localhost.jks
+		
+			--> password: 'tomcat'
+			
+		2. to view the new certificate and key pair
+			
+				keytool -list -v -keystore 
+				
+		3. Server Configuration
+		
+			<Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+			   maxThreads="150" scheme="https" secure="true"
+			   keystoreFile="/jmc-linux-64.keystore.jks" 
+			   keystorePass="password"
+			   clientAuth="false" sslProtocol="TLS" />
+			   
+		4. 
+			keytool -import -noprompt -trustcacerts -alias localhost -file C:\PROYECTOS\CloudFoundry\keys_folder\localhost.jks -keystore "%JAVA_HOME%/jre/lib/security/cacerts" -storepass <Password>
+			
+		
+				
+		
+		
+		
+		
+		
+		
+		
+		
+			
+			
+
+	C:\Program Files\TortoiseGit\bin\TortoiseGitPLink.exe
+
+
+
+
+
+	C:\KEYS\key1.pem
+	C:\PROYECTOS\HEROKU\keys\heroku.ppk
+	C:\Users\A572832\.ssh\id_rsa.pub
+
+
+	HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\$SERVERNAME$\PublicKeyFile
+			
