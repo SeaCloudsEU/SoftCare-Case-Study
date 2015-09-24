@@ -40,7 +40,6 @@ public class GridController extends SelectorComposer<Component>
 	// footer text
 	@Wire
 	private Footer footer_category;
-	
 	// Filter Options /////////////////
 	// Radio buttons
 	@Wire
@@ -57,6 +56,7 @@ public class GridController extends SelectorComposer<Component>
 	private Datebox datefromfilter;
 	@Wire
 	private Datebox datetofilter;
+	
 	
 	/**
 	 * 
@@ -179,8 +179,6 @@ public class GridController extends SelectorComposer<Component>
 		filterpatienttrigger.setText("");
 		datefromfilter.setText("");
 		datetofilter.setText("");
-		
-		
 	}
 	
 	
@@ -190,6 +188,9 @@ public class GridController extends SelectorComposer<Component>
 	@Listen("onClick=#loadAllPatientWarnings")
 	public void loadAllPatientWarnings() 
 	{
+		// reset fields
+		filterpatienttrigger.setText("");
+				
 		int totalWarnings = setWarningsModel(true);
 		footer_category.setLabel("Warnings from all patients - " + totalWarnings + " warnings");
 	}
@@ -213,18 +214,24 @@ public class GridController extends SelectorComposer<Component>
 	 */
 	private int setWarningsModel(boolean filter) 
 	{
-		try {
+		try 
+		{
 			ListModel<WarningInfo> model = null;
-			if (filter) {
+			if (filter) 
+			{
 				model = new ListModelList<WarningInfo>(getFilteredWarnings());
 			}
-			else {
+			else 
+			{
 				model = new ListModelList<WarningInfo>(getWarnings());
 			}
+			
 			wList.setModel(model);
+			
 			return model.getSize();
 		}
-		catch (Exception ex) {
+		catch (Exception ex) 
+		{
 			SystemDictionary.logException(ex);
 			return -1;
 		}
@@ -267,7 +274,6 @@ public class GridController extends SelectorComposer<Component>
 				lall = getWarnings_Delivered(lall, "false");
 			}
 			
-			
 			ArrayList<WarningInfo> lTemp = new ArrayList<WarningInfo>();
 			for (WarningInfo winfo : lall) {
 				lTemp.add(winfo);
@@ -293,10 +299,15 @@ public class GridController extends SelectorComposer<Component>
 	private WarningInfo[] getWarnings_PatientName(WarningInfo[] lall, String value) {
 		try 
 		{
+			SystemDictionary.webguiLog("DEBUG", "getWarnings_PatientName: " + value);
+			
 			ArrayList<WarningInfo> lTemp = new ArrayList<WarningInfo>();
 			
 			for (WarningInfo winfo : lall) {
-				if (winfo.getPatientName().equals(value)) {
+				SystemDictionary.webguiLog("DEBUG", "winfo.getPatientName(): " + winfo.getPatientName());
+				
+				if (winfo.getPatientName().equals(value)) 
+				{
 					lTemp.add(winfo);
 				}
 			}

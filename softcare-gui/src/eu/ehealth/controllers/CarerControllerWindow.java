@@ -1,8 +1,10 @@
 package eu.ehealth.controllers;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.Date;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
@@ -11,16 +13,18 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Datebox;
 import org.zkoss.zul.Window;
-import eu.ehealth.ErrorDictionary;
 import eu.ehealth.SystemDictionary;
 import eu.ehealth.controllers.details.ChangePassword;
 import eu.ehealth.controllers.details.assessment.CarerAssessmentInfo;
 import eu.ehealth.controllers.details.assessment.CarerAssessmentPopupController;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.Carer;
 import eu.ehealth.ws_client.xsd.CarerAssessment;
@@ -140,21 +144,24 @@ public class CarerControllerWindow extends SDFormControllerWindow
 			result = proxy.createUser(user);
 			if (!result.getDescription().equals("ok"))
 			{
-				SystemDictionary.webguiLog("TRACE", "Error creating user");
+				SystemDictionary.webguiLog("WARN", "#TXT# Error creating user");
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("Username not valid");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# Username not valid");
 				getFellow("internalformerror").setVisible(true);
-				SystemDictionary.webguiLog("TRACE", "Deleting Carer...");
-				OperationResult newresult = proxy.deleteCarer(user.getPersonID(), id);
-				SystemDictionary.webguiLog("TRACE", "Delete Carer result: " + newresult.getCode());
+				proxy.deleteCarer(user.getPersonID(), id);
 				return;
 			}
-			Executions.getCurrent().sendRedirect("/carers/index.zul");
+			
+			Messagebox.show("#TXT# Social worker created succesfully", "#TXT# Create New Social Worker", Messagebox.OK, Messagebox.INFORMATION);
+
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../carers/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error="
-					+ ErrorDictionary.UNKOW_ERROR);
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Create New Social Worker", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -180,16 +187,17 @@ public class CarerControllerWindow extends SDFormControllerWindow
 			Session ses = Sessions.getCurrent();
 			String id = (String) ses.getAttribute("userid");
 			proxy.updateCarer(carer, id);
+			
+			Messagebox.show("#TXT# Social worker updated succesfully", "#TXT# Update Social Worker", Messagebox.OK, Messagebox.INFORMATION);
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../carers/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error="
-					+ ErrorDictionary.UNKOW_ERROR);
-		}
-		finally
-		{
-			// TODO Show message on the following page.
-			Executions.getCurrent().sendRedirect("/carers/index.zul");
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Update Social Worker", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -229,7 +237,9 @@ public class CarerControllerWindow extends SDFormControllerWindow
 		btn.addEventListener("onClick", new EventListener() {
 			public void onEvent(Event arg0) throws Exception
 			{
-				Executions.getCurrent().sendRedirect("/carers/update.zul?carerid=" + currentid);
+				Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+				Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+				comp.setSrc("../carers/update.zul?carerid=" + currentid);
 			}
 		});
 		return btn;
@@ -261,12 +271,13 @@ public class CarerControllerWindow extends SDFormControllerWindow
 	 */
 	public void createPasswordDialog() throws SuspendNotAllowedException, InterruptedException, RemoteException
 	{
-		ChangePassword win = (ChangePassword) Executions.createComponents("password.zul", this, null);
+		ChangePassword win = (ChangePassword) Executions.createComponents("../carers/password.zul", this, null);
 
 		this.appendChild(win);
 		StorageComponentImpl proxy = SystemDictionary.getSCProxy();
 		String userid = (String) Sessions.getCurrent().getAttribute("userid");
-		OperationResult ores = proxy.getUserIdByPersonId(this.currentid, SystemDictionary.USERTYPE_CARER_INT, userid);
+		//OperationResult ores = proxy.getUserIdByPersonId(this.currentid, SystemDictionary.USERTYPE_CARER_INT, userid);
+		OperationResult ores = proxy.getUserIdByCarerId(this.currentid, userid);
 		win.setuserid(ores.getCode());
 		win.doModal();
 	}
@@ -303,7 +314,7 @@ public class CarerControllerWindow extends SDFormControllerWindow
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			SystemDictionary.logException(e);
 		}
 	}
 
@@ -315,7 +326,7 @@ public class CarerControllerWindow extends SDFormControllerWindow
 	 */
 	public void createAssessment() throws SuspendNotAllowedException, InterruptedException
 	{
-		assessmentWindow = (CarerAssessmentPopupController) Executions.createComponents("assessmentcar.zul", this, null);
+		assessmentWindow = (CarerAssessmentPopupController) Executions.createComponents("../carers/assessmentcar.zul", this, null);
 		this.turnAssessment2Form(assessmentWindow);
 		assessmentWindow.setVisible(true);
 		assessmentWindow.doModal();

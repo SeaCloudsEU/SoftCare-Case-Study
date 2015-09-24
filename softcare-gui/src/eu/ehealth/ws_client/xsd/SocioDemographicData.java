@@ -38,8 +38,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SocioDemographicData", propOrder = { "gender",
-		"maritalStatus", "children", "livingWith", "birthday" })
+@XmlType(name = "SocioDemographicData", propOrder = { "gender", "maritalStatus", "children", "livingWith", "birthday", "height" })
 public class SocioDemographicData
 {
 
@@ -56,6 +55,8 @@ public class SocioDemographicData
 	@XmlElement(required = true)
 	@XmlSchemaType(name = "date")
 	protected XMLGregorianCalendar birthday;
+	@XmlElement(name = "Height")
+	protected SystemParameter height;
 
 
 	public SocioDemographicData()
@@ -63,11 +64,21 @@ public class SocioDemographicData
 	}
 
 
+	/**
+	 * 
+	 * @param gender
+	 * @param maritalStatus
+	 * @param children
+	 * @param livingWith
+	 * @param birthday
+	 * @param height
+	 */
 	public SocioDemographicData(eu.ehealth.ws_client.xsd.SystemParameter gender,
 			eu.ehealth.ws_client.xsd.SystemParameter maritalStatus,
 			Short children,
 			eu.ehealth.ws_client.xsd.SystemParameter livingWith,
-			java.util.Date birthday)
+			java.util.Date birthday,
+			eu.ehealth.ws_client.xsd.SystemParameter height)
 	{
 		this.gender = gender;
 		this.maritalStatus = maritalStatus;
@@ -104,6 +115,29 @@ public class SocioDemographicData
 	public void setGender(SystemParameter value)
 	{
 		this.gender = value;
+	}
+	
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public SystemParameter getHeight()
+	{
+		return height;
+	}
+
+
+	/**
+	 * Define el valor de la propiedad Height.
+	 * 
+	 * @param value
+	 *            allowed object is {@link SystemParameter }
+	 * 
+	 */
+	public void setHeight(SystemParameter value)
+	{
+		this.height = value;
 	}
 
 

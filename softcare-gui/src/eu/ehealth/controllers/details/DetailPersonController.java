@@ -14,6 +14,11 @@ import eu.ehealth.ws_client.xsd.PersonData;
 import eu.ehealth.ws_client.xsd.SocioDemographicData;
 
 
+/**
+ * 
+ * @author a572832
+ *
+ */
 public abstract class DetailPersonController extends Window
 {
 
@@ -32,13 +37,18 @@ public abstract class DetailPersonController extends Window
 	public abstract Listitem[] createDataRows();
 
 
-	public DetailPersonController()
-	{
-	}
+	public DetailPersonController() { }
 
 
-	public void setControllerData(String id, PersonData data,
-			SocioDemographicData sddata, String responsible, Carer carers)
+	/**
+	 * 
+	 * @param id
+	 * @param data
+	 * @param sddata
+	 * @param responsible
+	 * @param carers
+	 */
+	public void setControllerData(String id, PersonData data, SocioDemographicData sddata, String responsible, Carer carers)
 	{
 		this.setCurrentid(id);
 		this.setCurrentdata(data);
@@ -55,6 +65,10 @@ public abstract class DetailPersonController extends Window
 	}
 
 
+	/**
+	 * 
+	 * @return
+	 */
 	protected Listitem[] getPersonDataListItems()
 	{
 		ArrayList<Listitem> listret = new ArrayList<Listitem>();
@@ -74,23 +88,18 @@ public abstract class DetailPersonController extends Window
 		lst2.appendChild(addtitle);
 		listret.add(lst2);
 
-		if (this.currentdata.getAddressList() != null
-				&& this.currentdata.getAddressList().getAddress() != null
+		if (this.currentdata.getAddressList() != null && this.currentdata.getAddressList().getAddress() != null
 				&& this.currentdata.getAddressList().getAddress().size() > 0)
 		{
 			for (int i = 0; i < this.currentdata.getAddressList().getAddress().size(); i++)
 			{
 				Address addressdata = this.currentdata.getAddressList().getAddress().get(i);
-				String addressstring = addressdata.getStreet() + " "
-						+ addressdata.getStreetNo() + ", "
-						+ addressdata.getCity();
-				if (addressdata.getCounty() != null
-						&& !addressdata.getCounty().equals("(none)"))
+				String addressstring = addressdata.getStreet() + " " + addressdata.getStreetNo() + ", " + addressdata.getCity();
+				if (addressdata.getCounty() != null && !addressdata.getCounty().equals("(none)"))
 				{
 					addressstring += "(" + addressdata.getCounty() + ")";
 				}
-				addressstring += "\n" + addressdata.getZipCode() + " "
-						+ addressdata.getCountry();
+				addressstring += "\n" + addressdata.getZipCode() + " " + addressdata.getCountry();
 				Listitem addresstext = new Listitem();
 				addresstext.appendChild(new Listcell(""));
 				addresstext.appendChild(new Listcell(addressstring));
@@ -105,19 +114,16 @@ public abstract class DetailPersonController extends Window
 		lst5.appendChild(comtitle);
 		listret.add(lst5);
 
-		if (this.currentdata.getCommunicationList() != null
-				&& this.currentdata.getCommunicationList().getCommunication() != null
+		if (this.currentdata.getCommunicationList() != null && this.currentdata.getCommunicationList().getCommunication() != null
 				&& this.currentdata.getCommunicationList().getCommunication().size() > 0)
 		{
 			Communication[] commdata = this.currentdata.getCommunicationList()
-					.getCommunication().toArray(new Communication[this.currentdata.getCommunicationList()
-					.getCommunication().size()]);
+					.getCommunication().toArray(new Communication[this.currentdata.getCommunicationList().getCommunication().size()]);
 			for (int i = 0; i < commdata.length; i++)
 			{
 				Listitem lst6 = new Listitem();
 				Listcell comcell = new Listcell("");
-				Listcell comcell2 = new Listcell("(" + commdata[i].getType()
-						+ ") " + commdata[i].getValue());
+				Listcell comcell2 = new Listcell("(" + commdata[i].getType() + ") " + commdata[i].getValue());
 				lst6.appendChild(comcell);
 				lst6.appendChild(comcell2);
 				listret.add(lst6);
@@ -194,4 +200,5 @@ public abstract class DetailPersonController extends Window
 		this.currentcarers = currentcarers;
 	}
 
+	
 }

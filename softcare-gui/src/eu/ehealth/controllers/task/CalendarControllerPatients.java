@@ -134,7 +134,7 @@ public class CalendarControllerPatients extends GenericForwardComposer
 	public void onEventCreate(CalendarsEvent event) 
 	{
 		try {
-			bookEventWin = (Window) Executions.createComponents("bookEvent.zul", self.getParent(), null);
+			bookEventWin = (Window) Executions.createComponents("../patients/bookEvent.zul", self.getParent(), null);
 			bookEventWin.setAttribute("calendars", cal);
 			bookEventWin.setAttribute("calevent", event);
 			bookEventWin.getFellow("qsrow").setVisible(true);
@@ -160,6 +160,7 @@ public class CalendarControllerPatients extends GenericForwardComposer
 			((Textbox) bookEventWin.getFellow("addressedid")).setValue(opres.getCode());	// id aladdinuser ... patient
 			((Textbox) bookEventWin.getFellow("objstr")).setValue(carer.toString());
 			((Textbox) bookEventWin.getFellow("addressedstr")).setValue(patient.toString());
+			((Textbox) bookEventWin.getFellow("patid_value")).setValue(patient.getID());
 			
 			String responsibleClinicianID = (String) session.getAttribute("ResponsibleClinicianID");
 			
@@ -222,7 +223,7 @@ public class CalendarControllerPatients extends GenericForwardComposer
 		{
 			Session ses = Sessions.getCurrent();
 			String userid = (String) ses.getAttribute("userid");
-			bookEventWin = (Window) Executions.createComponents("bookEvent.zul", self.getParent(), null);
+			bookEventWin = (Window) Executions.createComponents("../patients/bookEvent.zul", self.getParent(), null);
 			bookEventWin.setAttribute("calendars", cal);
 			bookEventWin.setAttribute("calevent", event);
 			Date setting = event.getCalendarEvent().getBeginDate();
@@ -294,6 +295,7 @@ public class CalendarControllerPatients extends GenericForwardComposer
 			
 			Patient patient = getCurrentPatient();
 			((Textbox) bookEventWin.getFellow("addressedstr")).setValue(patient.toString());
+			((Textbox) bookEventWin.getFellow("patid_value")).setValue(patient.getID());
 			User object = proxy.getUser((String) scevent.getParams().get("exec"));
 			
 			((Textbox) bookEventWin.getFellow("objid")).setValue(object.getID());

@@ -1,22 +1,35 @@
 package eu.ehealth.controllers.details.assessment;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
 import javax.xml.datatype.DatatypeFactory;
+
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Checkbox;
+
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.PatientAssessment;
 import eu.ehealth.ws_client.xsd.SystemParameter;
 
 
+/**
+ * 
+ * @author a572832
+ *
+ */
 public class AssessmentPopupController extends Window
 {
 
@@ -24,6 +37,9 @@ public class AssessmentPopupController extends Window
 	private static final long serialVersionUID = -4444846754906879668L;
 
 
+	/**
+	 * 
+	 */
 	public void saveAssessment()
 	{
 		String userid = (String) Sessions.getCurrent().getAttribute("userid");
@@ -42,14 +58,11 @@ public class AssessmentPopupController extends Window
 		}
 		catch (Exception ex) {}
 
-		Listitem aetiol = ((Listbox) this.getFellow("field03_in"))
-				.getSelectedItem();
-		String timeelapsed = ((Textbox) this.getFellow("field04_in"))
-				.getValue();
+		Listitem aetiol = ((Listbox) this.getFellow("field03_in")).getSelectedItem();
+		String timeelapsed = ((Textbox) this.getFellow("field04_in")).getValue();
 		String severity = ((Textbox) this.getFellow("field05_in")).getValue();
 		String relevantpa = ((Textbox) this.getFellow("field06_in")).getValue();
-		String comorbidity = ((Textbox) this.getFellow("field07_in"))
-				.getValue();
+		String comorbidity = ((Textbox) this.getFellow("field07_in")).getValue();
 		String charlsonC = ((Textbox) this.getFellow("field08_in")).getValue();
 		String barthe = ((Textbox) this.getFellow("field09_in")).getValue();
 		String lawton = ((Textbox) this.getFellow("field10_in")).getValue();
@@ -58,8 +71,7 @@ public class AssessmentPopupController extends Window
 		String bless1 = ((Textbox) this.getFellow("field13_in")).getValue();
 		String bless2 = ((Textbox) this.getFellow("field14_in")).getValue();
 		String bless3 = ((Textbox) this.getFellow("field15_in")).getValue();
-		String checklistmbpc = ((Textbox) this.getFellow("field16_in"))
-				.getValue();
+		String checklistmbpc = ((Textbox) this.getFellow("field16_in")).getValue();
 		String npqisev = ((Textbox) this.getFellow("field17_in")).getValue();
 		String npqistre = ((Textbox) this.getFellow("field18_in")).getValue();
 		String gds = ((Textbox) this.getFellow("field19_in")).getValue();
@@ -70,8 +82,8 @@ public class AssessmentPopupController extends Window
 		boolean sensor = ((Checkbox) this.getFellow("field24_in")).isChecked();
 		String pharma = ((Textbox) this.getFellow("field25_in")).getValue();
 		// TODO aetiology
-		ass.setAetology(new SystemParameter((String) aetiol.getValue(), aetiol
-				.getLabel()));
+		ass.setAetology(new SystemParameter((String) aetiol.getValue(), aetiol.getLabel()));
+		
 		if (timeelapsed.equals(""))
 		{
 			ass.setTimeEllapsedSinceDiagnosed(new Short("0"));
@@ -198,15 +210,17 @@ public class AssessmentPopupController extends Window
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			SystemDictionary.logException(e);
+			Messagebox.show("Error : " + e.getMessage(), "#TXT# Save assesment", Messagebox.OK, Messagebox.ERROR);
 		}
 		finally
 		{
-			// this.setVisible(false);
-			// this.getParent().removeChild(this);
-			Executions.getCurrent().sendRedirect("");
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../patients/details.zul?patid=" + patientid);
 		}
-
 	}
 
+	
 }

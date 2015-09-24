@@ -1,7 +1,9 @@
 package eu.ehealth.controllers;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
@@ -10,12 +12,14 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Window;
-import eu.ehealth.ErrorDictionary;
 import eu.ehealth.SystemDictionary;
 import eu.ehealth.controllers.details.ChangePassword;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.Clinician;
 import eu.ehealth.ws_client.xsd.Identifier;
@@ -83,7 +87,6 @@ public class ClinicianControllerWindow extends AladdinFormControllerWindow
 		}
 		else
 		{
-			SystemDictionary.webguiLog("INFO", "WHAT!!!!");
 			buttonshbox.appendChild(this.createUpdateButton());
 		}
 		this.appendChild(buttonshbox);
@@ -113,8 +116,7 @@ public class ClinicianControllerWindow extends AladdinFormControllerWindow
 		{
 			return;
 		}
-		
-		SystemDictionary.webguiLog("TRACE", "Saving Clinician...");
+
 		// Getting information from form fields
 		PersonData personData = this.getPersonData();
 
@@ -136,20 +138,24 @@ public class ClinicianControllerWindow extends AladdinFormControllerWindow
 			result = proxy.createUser(user);
 			if (!result.getDescription().equals("ok"))
 			{
-				SystemDictionary.webguiLog("TRACE", "Error creating user");
+				SystemDictionary.webguiLog("WARN", "#TXT# Error creating clinician");
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("Username not valid");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# Username not valid");
 				getFellow("internalformerror").setVisible(true);
-				SystemDictionary.webguiLog("TRACE", "Deleting Clinician...");
 				OperationResult newresult = proxy.deleteClinician(user.getPersonID(), id);
-				SystemDictionary.webguiLog("TRACE", "Delete Clinician result: " + newresult.getCode());
 				return;
 			}
-			Executions.getCurrent().sendRedirect("/clinicians/index.zul");
+			
+			Messagebox.show("#TXT# Clinician created succesfully", "#TXT# Create New Clinician", Messagebox.OK, Messagebox.INFORMATION);
+
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../clinicians/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error=" + ErrorDictionary.UNKOW_ERROR);
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Create New Clinician", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -169,15 +175,17 @@ public class ClinicianControllerWindow extends AladdinFormControllerWindow
 			Session ses = Sessions.getCurrent();
 			String id = (String) ses.getAttribute("userid");
 			proxy.updateClinician(clinic, id);
+			
+			Messagebox.show("#TXT# Clinician updated succesfully", "#TXT# Update Clinician", Messagebox.OK, Messagebox.INFORMATION);
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../clinicians/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error=" + ErrorDictionary.UNKOW_ERROR);
-		}
-		finally
-		{
-			// TODO Show message on the following page.
-			Executions.getCurrent().sendRedirect("/clinicians/index.zul");
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Update Clinician", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -218,7 +226,9 @@ public class ClinicianControllerWindow extends AladdinFormControllerWindow
 		btn.addEventListener("onClick", new EventListener() {
 			public void onEvent(Event arg0) throws Exception
 			{
-				Executions.getCurrent().sendRedirect("/clinicians/update.zul?clinid=" + currentid);
+				Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+				Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+				comp.setSrc("../clinicians/update.zul?clinid=" + currentid);
 			}
 		});
 
@@ -256,7 +266,8 @@ public class ClinicianControllerWindow extends AladdinFormControllerWindow
 		this.appendChild(win);
 		StorageComponentImpl proxy = SystemDictionary.getSCProxy();
 		String userid = (String) Sessions.getCurrent().getAttribute("userid");
-		OperationResult ores = proxy.getUserIdByPersonId(this.currentid, SystemDictionary.USERTYPE_CLINICIAN_INT, userid);
+		//OperationResult ores = proxy.getUserIdByPersonId(this.currentid, SystemDictionary.USERTYPE_CLINICIAN_INT, userid);
+		OperationResult ores = proxy.getUserIdByClinicianId(this.currentid, userid);
 		win.setuserid(ores.getCode());
 		win.doModal();
 	}

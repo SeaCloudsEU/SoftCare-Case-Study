@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="ID" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="Surname" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="Name" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="ClinicianID" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -31,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PatientInfo", propOrder = { "id", "surname", "name" })
+@XmlType(name = "PatientInfo", propOrder = { "id", "surname", "name", "clinicianid" })
 public class PatientInfo
 {
 
@@ -42,6 +43,8 @@ public class PatientInfo
 	protected String surname;
 	@XmlElement(name = "Name", required = true)
 	protected String name;
+	@XmlElement(name = "ClinicianID", required = true)
+	protected String clinicianid;
 	
 	
 	public String toString()
@@ -71,6 +74,30 @@ public class PatientInfo
 	public void setID(String value)
 	{
 		this.id = value;
+	}
+	
+	
+	/**
+	 * Obtiene el valor de la propiedad ClinicianID.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getClinicianID()
+	{
+		return clinicianid;
+	}
+
+
+	/**
+	 * Define el valor de la propiedad ClinicianID.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setClinicianID(String value)
+	{
+		this.clinicianid = value;
 	}
 
 
@@ -122,3 +149,4 @@ public class PatientInfo
 	}
 
 }
+

@@ -1,16 +1,22 @@
 package eu.ehealth.controllers;
 
+import java.util.Collection;
+
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Window;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 
 
@@ -39,17 +45,19 @@ public class IndexPatientsWindow extends Window
 		try
 		{
 			proxy.deletePatient(this.patid, userid);
+			
+			this.patid = null;
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../patients/index_content.zul");
 		}
 		catch (Exception re)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(re);
+			Messagebox.show("#TXT# Error : " + re.getMessage(), "#TXT# Delete Patient", Messagebox.OK, Messagebox.ERROR);
 		}
-		finally
-		{
-			this.patid = null;
-			Executions.sendRedirect("/patients/index.zul");
-		}
-
 	}
 
 
@@ -67,16 +75,12 @@ public class IndexPatientsWindow extends Window
 		String text = Labels.getLabel("patients.delete.sure");
 		btn.setLabel(text);
 		btn.addEventListener("onClick", new EventListener() {
-
-
 			public void onEvent(Event arg0) throws Exception
 			{
 				deletePatient();
 			}
 		});
 		auxwin.addEventListener("onClose", new EventListener() {
-
-
 			public void onEvent(Event arg0) throws Exception
 			{
 				patid = null;
@@ -90,31 +94,8 @@ public class IndexPatientsWindow extends Window
 		}
 		catch (Exception ee)
 		{
-			SystemDictionary.webguiLog("WARN", ee.getMessage());
+			SystemDictionary.logException(ee);
 		}
-
-	}
-
-
-	/**
-	 * Very simple method to redirect users to update patients information
-	 * 
-	 * @param id Patient to be updated
-	 */
-	public void updatePatient(String id)
-	{
-		Executions.sendRedirect("/patients/update.zul?patid=" + id);
-	}
-
-
-	/**
-	 * Very simple method to redirect users to see Patients details
-	 * 
-	 * @param id Patient to be shown on the details page
-	 */
-	public void detailsPatient(String id)
-	{
-		Executions.sendRedirect("/patients/details.zul?patid=" + id);
 	}
 
 
@@ -139,6 +120,9 @@ public class IndexPatientsWindow extends Window
 			this.setBorder("normal");
 			this.setClosable(true);
 		}
+		
+		
 	}
+	
 
 }

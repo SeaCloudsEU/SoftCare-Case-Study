@@ -17,7 +17,7 @@ import org.zkoss.zul.Window;
 import org.zkoss.zul.Radio;
 import eu.ehealth.SystemDictionary;
 import eu.ehealth.ws_client.StorageComponentImpl;
-import eu.ehealth.ws_client.xsd.Carer;
+import eu.ehealth.ws_client.xsd.CarerInfo;
 
 
 /**
@@ -53,7 +53,7 @@ public class CarerListWindowController extends Window
 			String id = (String) ses.getAttribute("userid");
 
 			// CarerInfo[] listcarer = proxy.listOfCarers(null,id);
-			Carer[] listcarer = proxy.getAvailableCarersArr(id);
+			CarerInfo[] listcarer = proxy.getAvailableCarersArr(id);
 
 			Grid grid = new Grid();
 			Columns cols = new Columns();
@@ -67,14 +67,12 @@ public class CarerListWindowController extends Window
 			{
 				Radiogroup rgroup = new Radiogroup();
 				rgroup.setId("rgroup_carer");
-				SystemDictionary.webguiLog("DEBUG", "Carer LIST SIZE: "
-						+ listcarer.length);
 				for (int i = 0; i < listcarer.length; i++)
 				{
 					Row rowe = new Row();
 					Radio rade = new Radio();
-					rade.setLabel(listcarer[i].getPersonData().getSurname()
-							+ ", " + listcarer[i].getPersonData().getName());
+					rade.setLabel(listcarer[i].getSurname()
+							+ ", " + listcarer[i].getName());
 					rade.setValue(listcarer[i].getID());
 					rowe.appendChild(rade);
 					rows.appendChild(rowe);
@@ -85,8 +83,6 @@ public class CarerListWindowController extends Window
 				Button ton = new Button();
 				ton.setLabel(modbutton);
 				ton.addEventListener("onClick", new EventListener() {
-
-
 					public void onEvent(Event arg0) throws Exception
 					{
 						setCarer();
@@ -97,7 +93,7 @@ public class CarerListWindowController extends Window
 			else
 			{
 				Row rowno = new Row();
-				Label nocarers = new Label("No available carers");
+				Label nocarers = new Label("#TXT# No available carers");
 				rowno.appendChild(nocarers);
 				rows.appendChild(rowno);
 				grid.appendChild(rows);
@@ -112,7 +108,7 @@ public class CarerListWindowController extends Window
 		}
 		catch (Exception re)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(re);
 		}
 	}
 

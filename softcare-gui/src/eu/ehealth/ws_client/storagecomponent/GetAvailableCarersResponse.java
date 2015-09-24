@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import eu.ehealth.ws_client.xsd.Carer;
+import eu.ehealth.ws_client.xsd.CarerInfo;
 
 
 /**
@@ -38,7 +38,7 @@ import eu.ehealth.ws_client.xsd.Carer;
 public class GetAvailableCarersResponse {
 
     @XmlElement(nillable = true)
-    protected List<Carer> out;
+    protected List<CarerInfo> out;
 
     /**
      * Gets the value of the out property.
@@ -62,9 +62,9 @@ public class GetAvailableCarersResponse {
      * 
      * 
      */
-    public List<Carer> getOut() {
+    public List<CarerInfo> getOut() {
         if (out == null) {
-            out = new ArrayList<Carer>();
+            out = new ArrayList<CarerInfo>();
         }
         return this.out;
     }

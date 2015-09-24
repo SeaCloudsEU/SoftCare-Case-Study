@@ -3,21 +3,26 @@ package eu.ehealth.controllers.task;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Datebox;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Timebox;
 import org.zkoss.zul.Window;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.ExternalService;
 import eu.ehealth.ws_client.xsd.OperationResult;
@@ -38,7 +43,6 @@ public class CalendarWindowControllerPatients extends Window
 
 
 	private static final long serialVersionUID = -5542409524567322844L;
-	
 	public ExternalService[] selected_services;
 
 
@@ -195,7 +199,6 @@ public class CalendarWindowControllerPatients extends Window
 			// Object ID (Person ID)
 			String objids = ((Textbox) getFellow("objid")).getValue();
 			String addressedid = ((Textbox) getFellow("addressedid")).getValue();
-			SystemDictionary.webguiLog("TRACE", "Getobjids result = " + objids);
 			
 			Task ts = new Task("", tastype, caltas, caltas2, tasstatus, URL, text, questionnaire, objids, userids, addressedid);
 			boolean massive = ((Checkbox) getFellow("massivecheck")).isChecked();
@@ -229,16 +232,23 @@ public class CalendarWindowControllerPatients extends Window
 			{
 				opres = proxy.assignTask(ts, SystemDictionary.getLocale(), userids);
 			}
-			SystemDictionary.webguiLog("DEBUG", "Assign task result = " + opres.getCode() + ":" + opres.getDescription());
+			
+			Messagebox.show("#TXT# Task crated succesfully", "#TXT# Save Task", Messagebox.OK, Messagebox.INFORMATION);
+			
+			String patid_value = ((Textbox) getFellow("patid_value")).getValue();
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../patients/details.zul?patid=" + patid_value);
 		}
 		catch (Exception e)
 		{
 			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Save Task", Messagebox.OK, Messagebox.ERROR);
 		}
 		finally
 		{
 			this.getParent().removeChild(this);
-			Executions.getCurrent().sendRedirect("");
 		}
 	}
 
@@ -256,14 +266,18 @@ public class CalendarWindowControllerPatients extends Window
 			String uid = (String) ses.getAttribute("userid");
 			proxy.changeTaskStatus(Integer.parseInt(task), SystemDictionary.TASK_STATUS_CANCELLED_INT, uid);
 
+			Messagebox.show("#TXT# Task canceled succesfully", "#TXT# Cancel Task", Messagebox.OK, Messagebox.INFORMATION);
+			
+			String patid_value = ((Textbox) getFellow("patid_value")).getValue();
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../patients/details.zul?patid=" + patid_value);
 		}
 		catch (Exception e)
 		{
 			SystemDictionary.logException(e);
-		}
-		finally
-		{
-			Executions.getCurrent().sendRedirect("");
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Cancel Task", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 

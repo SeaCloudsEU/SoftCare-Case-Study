@@ -1,16 +1,21 @@
 package eu.ehealth.controllers;
 
+import java.util.Collection;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Window;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 
 
@@ -39,17 +44,19 @@ public class IndexCarersWindow extends Window
 		try
 		{
 			proxy.deleteCarer(this.carerid, userid);
+			
+			this.carerid = null;
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../carers/index_content.zul");
 		}
 		catch (Exception re)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(re);
+			Messagebox.show("#TXT# Error : " + re.getMessage(), "#TXT# Delete Social worker", Messagebox.OK, Messagebox.ERROR);
 		}
-		finally
-		{
-			this.carerid = null;
-			Executions.sendRedirect("/carers/index.zul");
-		}
-
 	}
 
 
@@ -67,16 +74,12 @@ public class IndexCarersWindow extends Window
 		String text = Labels.getLabel("carers.delete.sure");
 		btn.setLabel(text);
 		btn.addEventListener("onClick", new EventListener() {
-
-
 			public void onEvent(Event arg0) throws Exception
 			{
 				deleteCarer();
 			}
 		});
 		auxwin.addEventListener("onClose", new EventListener() {
-
-
 			public void onEvent(Event arg0) throws Exception
 			{
 				carerid = null;
@@ -90,7 +93,7 @@ public class IndexCarersWindow extends Window
 		}
 		catch (Exception ee)
 		{
-			SystemDictionary.webguiLog("WARN", ee.getMessage());
+			SystemDictionary.logException(ee);
 		}
 
 	}
@@ -103,7 +106,9 @@ public class IndexCarersWindow extends Window
 	 */
 	public void updateCarer(String id)
 	{
-		Executions.sendRedirect("/carers/update.zul?carerid=" + id);
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc("../carers/update.zul?carerid=" + id);
 	}
 
 
@@ -111,11 +116,11 @@ public class IndexCarersWindow extends Window
 	 * Very simple method to redirect users to see Carers details
 	 * 
 	 * @param id Carer to be shown on the details page
-	 */
+	 
 	public void detailsCarer(String id)
 	{
 		Executions.sendRedirect("/carers/details.zul?carerid=" + id);
-	}
+	}*/
 
 
 	@SuppressWarnings("serial")
@@ -139,6 +144,9 @@ public class IndexCarersWindow extends Window
 			this.setBorder("normal");
 			this.setClosable(true);
 		}
+		
+		
 	}
+	
 
 }

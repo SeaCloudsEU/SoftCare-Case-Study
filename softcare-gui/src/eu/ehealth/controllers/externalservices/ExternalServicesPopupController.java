@@ -1,12 +1,16 @@
 package eu.ehealth.controllers.externalservices;
 
+import java.util.Collection;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.ExternalService;
 
@@ -48,7 +52,13 @@ public class ExternalServicesPopupController extends Window
 		}
 		finally
 		{
-			Executions.getCurrent().sendRedirect("");
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../extsrv/index_content.zul");
+			
+			this.setVisible(false);
+			this.getParent().removeChild(this);
 		}
 	}
 
@@ -77,7 +87,13 @@ public class ExternalServicesPopupController extends Window
 		}
 		finally
 		{
-			Executions.getCurrent().sendRedirect("");
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../extsrv/index_content.zul");
+			
+			this.setVisible(false);
+			this.getParent().removeChild(this);
 		}
 	}
 	

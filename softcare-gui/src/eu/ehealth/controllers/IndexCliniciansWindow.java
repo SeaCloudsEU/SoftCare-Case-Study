@@ -1,16 +1,21 @@
 package eu.ehealth.controllers;
 
+import java.util.Collection;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Window;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 
 
@@ -39,17 +44,19 @@ public class IndexCliniciansWindow extends Window
 		try
 		{
 			proxy.deleteClinician(this.clinicianid, userid);
+			
+			this.clinicianid = null;
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../clinicians/index_content.zul");
 		}
 		catch (Exception re)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(re);
+			Messagebox.show("#TXT# Error : " + re.getMessage(), "#TXT# Delete Clinician", Messagebox.OK, Messagebox.ERROR);
 		}
-		finally
-		{
-			this.clinicianid = null;
-			Executions.sendRedirect("/clinicians/index.zul");
-		}
-
 	}
 
 
@@ -67,16 +74,12 @@ public class IndexCliniciansWindow extends Window
 		String text = Labels.getLabel("clinicians.delete.sure");
 		btn.setLabel(text);
 		btn.addEventListener("onClick", new EventListener() {
-
-
 			public void onEvent(Event arg0) throws Exception
 			{
 				deleteClinician();
 			}
 		});
 		auxwin.addEventListener("onClose", new EventListener() {
-
-
 			public void onEvent(Event arg0) throws Exception
 			{
 				clinicianid = null;
@@ -90,9 +93,8 @@ public class IndexCliniciansWindow extends Window
 		}
 		catch (Exception ee)
 		{
-			SystemDictionary.webguiLog("WARN", ee.getMessage());
+			SystemDictionary.logException(ee);
 		}
-
 	}
 
 
@@ -103,7 +105,9 @@ public class IndexCliniciansWindow extends Window
 	 */
 	public void updateClinician(String id)
 	{
-		Executions.sendRedirect("/clinicians/update.zul?clinid=" + id);
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc("../clinicians/update.zul?clinid=" + id);
 	}
 
 
@@ -114,7 +118,9 @@ public class IndexCliniciansWindow extends Window
 	 */
 	public void detailsClinician(String id)
 	{
-		Executions.sendRedirect("/clinicians/details.zul?clinid=" + id);
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc("../clinicians/details.zul?clinid=" + id);
 	}
 
 
@@ -139,6 +145,9 @@ public class IndexCliniciansWindow extends Window
 			this.setBorder("normal");
 			this.setClosable(true);
 		}
+		
+		
 	}
 
+	
 }

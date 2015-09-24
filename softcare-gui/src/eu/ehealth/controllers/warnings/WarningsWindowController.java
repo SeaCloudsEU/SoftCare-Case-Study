@@ -9,6 +9,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zul.Datebox;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.Row;
@@ -55,11 +56,12 @@ public class WarningsWindowController extends Window
 			Warning[] warning = proxy.getWarningsArr(new SearchCriteria[] { filter }, usid);
 			if (warning.length != 1)
 			{
-				ErrorDictionary.redirectWithError("/warnings/index.zul?error=4");
+				Messagebox.show("#TXT# Error (4) while reading 'warning' data", "#TXT# Read Warning", Messagebox.OK, Messagebox.ERROR);
+				return;
 			}
 			Patient pinfo = warning[0].getPatient();
 
-			warningPopup = (WarningsPopupController) Executions.createComponents("form.zul", this, null);
+			warningPopup = (WarningsPopupController) Executions.createComponents("../warnings/form.zul", this, null);
 			warningPopup.setWarningid(warningid);
 			
 			((Textbox) warningPopup.getFellow("wid")).setValue(warning[0].getID());
@@ -94,8 +96,8 @@ public class WarningsWindowController extends Window
 		}
 		catch (Exception e)
 		{
+			Messagebox.show("#TXT# Error (" + ErrorDictionary.WARNING_RETRIEVE_ERROR + ") while reading 'warning' data", "#TXT# Read Warning", Messagebox.OK, Messagebox.ERROR);
 			e.printStackTrace();
-			ErrorDictionary.redirectWithError("?error=" + ErrorDictionary.WARNING_RETRIEVE_ERROR);
 		}
 	}
 
@@ -106,7 +108,7 @@ public class WarningsWindowController extends Window
 	 */
 	public void createPatientsDialog() throws InterruptedException
 	{
-		PatientListForWarnings respolist = (PatientListForWarnings) Executions.getCurrent().createComponents("/warnings/patientlist.zul", this, null);
+		PatientListForWarnings respolist = (PatientListForWarnings) Executions.getCurrent().createComponents("../warnings/patientlist.zul", this, null);
 		respolist.doModal();
 	}
 	

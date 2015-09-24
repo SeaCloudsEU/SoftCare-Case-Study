@@ -1,14 +1,22 @@
 package eu.ehealth.controllers.warnings;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Window;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
-import eu.ehealth.ws_client.xsd.OperationResult;
 
 
+/**
+ * 
+ * @author a572832
+ *
+ */
 public class WarningsPopupController extends Window
 {
 
@@ -17,38 +25,53 @@ public class WarningsPopupController extends Window
 	private String warningid;
 
 
+	/**
+	 * 
+	 * @throws RemoteException
+	 */
 	public void markWarningAsRead() throws RemoteException
 	{
 		StorageComponentImpl proxy = new StorageComponentImpl();
 		String uid = (String) Sessions.getCurrent().getAttribute("userid");
 		try
 		{
-			OperationResult op = proxy.markWarningAsRead(this.warningid, uid);
-			SystemDictionary.webguiLog("DEBUG", "Mark as read: " + op.getCode()
-					+ ":" + op.getDescription());
+			proxy.markWarningAsRead(this.warningid, uid);
 		}
-		catch (Exception re)
+		catch (Exception e)
 		{
-			this.setVisible(false);
-			this.detach();
+			SystemDictionary.logException(e);
 		}
 		finally
 		{
-			Executions.getCurrent().sendRedirect("");
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../warnings/index_content.zul");
+			
+			this.setVisible(false);
+			this.getParent().removeChild(this);
 		}
-
 	}
 
 
+	/**
+	 * 
+	 * @return
+	 */
 	public String getWarningid()
 	{
 		return warningid;
 	}
 
 
+	/**
+	 * 
+	 * @param warningid
+	 */
 	public void setWarningid(String warningid)
 	{
 		this.warningid = warningid;
 	}
 
+	
 }
