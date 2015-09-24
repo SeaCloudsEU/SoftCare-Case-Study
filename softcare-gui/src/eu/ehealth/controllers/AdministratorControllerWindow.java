@@ -1,7 +1,9 @@
 package eu.ehealth.controllers;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
@@ -10,13 +12,15 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
-import eu.ehealth.ErrorDictionary;
 import eu.ehealth.SystemDictionary;
 import eu.ehealth.controllers.details.ChangePassword;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.Administrator;
 import eu.ehealth.ws_client.xsd.Clinician;
@@ -39,7 +43,6 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 	 */
 	private static final long serialVersionUID = -7379494223188983856L;
 
-	
 	
 	/**
 	 * Default constructor
@@ -87,7 +90,6 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 		}
 		else
 		{
-			SystemDictionary.webguiLog("INFO", "WHAT!!!!");
 			buttonshbox.appendChild(this.createUpdateButton());
 		}
 		this.appendChild(buttonshbox);
@@ -139,7 +141,7 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 			result = proxy.createUser(user);
 			if (!result.getDescription().equals("ok"))
 			{
-				SystemDictionary.webguiLog("TRACE", "Error creating user");
+				SystemDictionary.webguiLog("WARN", "Error creating user");
 				Window win = (Window) getFellow("internalformerror");
 				((Label) win.getFellow("errorlbl")).setValue("Username not valid");
 				getFellow("internalformerror").setVisible(true);
@@ -148,11 +150,17 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 				SystemDictionary.webguiLog("TRACE", "Delete Administrator result: " + newresult.getCode());
 				return;
 			}
-			Executions.getCurrent().sendRedirect("/administration/index.zul");
+			
+			Messagebox.show("#TXT# Admninistrator created succesfully", "#TXT# Create New Administrator", Messagebox.OK, Messagebox.INFORMATION);
+
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../administration/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error=" + ErrorDictionary.UNKOW_ERROR);
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Create New Administrator", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -165,22 +173,24 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 	{
 		PersonData personData = this.getPersonData();
 
-		Clinician clinic = new Clinician(this.currentid, personData);
+		Administrator admin = new Administrator(this.currentid, personData);
 		try
 		{
 			StorageComponentImpl proxy = new StorageComponentImpl();
 			Session ses = Sessions.getCurrent();
 			String id = (String) ses.getAttribute("userid");
-			proxy.updateClinician(clinic, id);
+			proxy.updateAdministrator(admin, id); 
+			
+			Messagebox.show("#TXT# Admninistrator updated succesfully", "#TXT# Update Administrator", Messagebox.OK, Messagebox.INFORMATION);
+
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../administration/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error=" + ErrorDictionary.UNKOW_ERROR);
-		}
-		finally
-		{
-			// TODO Show message on the following page.
-			Executions.getCurrent().sendRedirect("/administration/index.zul");
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Update Administrator", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -221,7 +231,9 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 		btn.addEventListener("onClick", new EventListener() {
 			public void onEvent(Event arg0) throws Exception
 			{
-				Executions.getCurrent().sendRedirect("/administration/update.zul?clinid=" + currentid);
+				Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+				Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+				comp.setSrc("../administration/update.zul?clinid=" + currentid);
 			}
 		});
 
@@ -254,12 +266,13 @@ public class AdministratorControllerWindow extends AladdinFormControllerWindow
 	 */
 	public void createPasswordDialog() throws SuspendNotAllowedException, InterruptedException, RemoteException
 	{
-		ChangePassword win = (ChangePassword) Executions.createComponents("password.zul", this, null);
+		ChangePassword win = (ChangePassword) Executions.createComponents("../administration/password.zul", this, null);
 
 		this.appendChild(win);
 		StorageComponentImpl proxy = SystemDictionary.getSCProxy();
 		String userid = (String) Sessions.getCurrent().getAttribute("userid");
-		OperationResult ores = proxy.getUserIdByPersonId(this.currentid, SystemDictionary.USERTYPE_ADMIN_INT, userid);
+		//OperationResult ores = proxy.getUserIdByPersonId(this.currentid, SystemDictionary.USERTYPE_ADMIN_INT, userid);
+		OperationResult ores = proxy.getUserIdByAdminId(this.currentid, userid);
 		win.setuserid(ores.getCode());
 		win.doModal();
 	}

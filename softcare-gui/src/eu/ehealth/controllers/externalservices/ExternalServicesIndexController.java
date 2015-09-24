@@ -1,17 +1,20 @@
 package eu.ehealth.controllers.externalservices;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.Button;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.ExternalService;
-import eu.ehealth.ws_client.xsd.OperationResult;
 
 
 /**
@@ -35,7 +38,7 @@ public class ExternalServicesIndexController extends Window
 	 */
 	public void createService() throws InterruptedException
 	{
-		servicePopup = (Window) Executions.createComponents("form.zul", this, null);
+		servicePopup = (Window) Executions.createComponents("../extsrv/form.zul", this, null);
 		((Button) servicePopup.getFellow("savebutton")).setVisible(true);
 		String title = Labels.getLabel("extsrv.new");
 		servicePopup.setTitle(title);
@@ -65,7 +68,7 @@ public class ExternalServicesIndexController extends Window
 			}
 		}
 
-		servicePopup = (Window) Executions.createComponents("form.zul", this, null);
+		servicePopup = (Window) Executions.createComponents("../extsrv/form.zul", this, null);
 		
 		int selectedindex = 1;
 		if (defserv.getType().equals(SystemDictionary.EXT_SERV_EXERCISES)) {
@@ -104,7 +107,7 @@ public class ExternalServicesIndexController extends Window
 				break;
 			}
 		}
-		servicePopup = (Window) Executions.createComponents("form.zul", this, null);
+		servicePopup = (Window) Executions.createComponents("../extsrv/form.zul", this, null);
 		
 		int selectedindex = 1;
 		if (defserv.getType().equals(SystemDictionary.EXT_SERV_EXERCISES)) {
@@ -138,10 +141,12 @@ public class ExternalServicesIndexController extends Window
 		String userid = (String) Sessions.getCurrent().getAttribute("userid");
 		try
 		{
-			SystemDictionary.webguiLog("TRACE", "Deleting... ");
-			OperationResult result = proxy.deleteExternalService(srvid, userid);
-			SystemDictionary.webguiLog("INFO", "Delete result: " + result.getDescription());
-			Executions.getCurrent().sendRedirect("");
+			proxy.deleteExternalService(srvid, userid);
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../extsrv/index_content.zul");
 		}
 		catch (Exception e)
 		{

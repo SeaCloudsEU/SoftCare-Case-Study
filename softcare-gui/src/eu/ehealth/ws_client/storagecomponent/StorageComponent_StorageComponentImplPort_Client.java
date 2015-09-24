@@ -2,6 +2,7 @@ package eu.ehealth.ws_client.storagecomponent;
 
 import java.net.URL;
 import javax.xml.namespace.QName;
+import eu.ehealth.ws_client.StorageComponent;
 import eu.ehealth.ws_client.StorageComponentImplService;
 
 
@@ -862,7 +863,7 @@ public final class StorageComponent_StorageComponentImplPort_Client
 		{
 			System.out.println("Invoking getAvailableCarers...");
 			java.lang.String _getAvailableCarers_userId = "_getAvailableCarers_userId-806619894";
-			java.util.List<eu.ehealth.ws_client.xsd.Carer> _getAvailableCarers__return = port
+			java.util.List<eu.ehealth.ws_client.xsd.CarerInfo> _getAvailableCarers__return = port
 					.getAvailableCarers(_getAvailableCarers_userId);
 			System.out.println("getAvailableCarers.result="
 					+ _getAvailableCarers__return);

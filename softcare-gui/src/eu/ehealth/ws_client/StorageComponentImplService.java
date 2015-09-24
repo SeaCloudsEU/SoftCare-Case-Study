@@ -6,7 +6,6 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.WebEndpoint;
 import javax.xml.ws.WebServiceClient;
 import javax.xml.ws.WebServiceFeature;
-import eu.ehealth.ws_client.storagecomponent.StorageComponent;
 import javax.xml.ws.Service;
 
 

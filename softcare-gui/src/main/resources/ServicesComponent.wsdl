@@ -160,7 +160,7 @@
   </wsdl:binding>
   <wsdl:service name="ServicesComponentImplService">
     <wsdl:port binding="tns:ServicesComponentImplServiceSoapBinding" name="ServicesComponentImplPort">
-      <soap:address location="http://e-health-ws-app-eu.herokuapp.com/ServicesComponent?wsdl"/>
+      <soap:address location="http://softcare-ws.95.211.172.243.xip.io/ServicesComponent?wsdl"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

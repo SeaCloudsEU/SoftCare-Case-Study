@@ -2,7 +2,7 @@
 <?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
 <?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
 <zk>
-	<separator height="40px"/>
+	<separator height="80px"/>
 	
 	<window width="400px" sclass="mainerror" title="Session Timeout" style="margin:0 auto;" border="normal">
 		<vbox>
@@ -11,14 +11,14 @@
 		</vbox>
 		<vbox>
 			<separator height="5px"/>
-			<button label="E-Health login form" width="100%" sclass="logintext" onClick="goToAladdin()"/>
+			<button label="Sofcare Application login form" width="100%" sclass="logintext" onClick="goToAladdin()"/>
 		</vbox>
 	</window>
 	
 	<zscript>
 		public void goToAladdin()
 		{
-			Executions.getCurrent().sendRedirect("/");
+			Executions.getCurrent().sendRedirect("/adm/login.zul");
 		}
 	</zscript>
 </zk>

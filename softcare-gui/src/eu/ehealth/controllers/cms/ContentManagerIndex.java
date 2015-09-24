@@ -1,13 +1,20 @@
 package eu.ehealth.controllers.cms;
 
+import java.util.Collection;
+
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
+import org.zkoss.zul.Include;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Checkbox;
+
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.MediaContent;
 import eu.ehealth.ws_client.xsd.SearchCriteria;
@@ -33,7 +40,7 @@ public class ContentManagerIndex extends Window
 	 */
 	public void createContent() throws SuspendNotAllowedException, InterruptedException
 	{
-		contentpopup = (Window) Executions.createComponents("form.zul", this, null);
+		contentpopup = (Window) Executions.createComponents("../cms/form.zul", this, null);
 		contentpopup.getFellow("savebutton").setVisible(true);
 		contentpopup.setTitle("New media content");
 		contentpopup.setVisible(true);
@@ -49,7 +56,7 @@ public class ContentManagerIndex extends Window
 	public void modifyContent(String id) throws Exception
 	{
 		MediaContent mcontent = this.getContentByID(id);
-		contentpopup = (Window) Executions.createComponents("form.zul", this, null);
+		contentpopup = (Window) Executions.createComponents("../cms/form.zul", this, null);
 		contentpopup.getFellow("updatebutton").setVisible(true);
 		((Textbox) contentpopup.getFellow("content_id")).setValue(mcontent.getID());
 		((Textbox) contentpopup.getFellow("content_title")).setValue(mcontent.getTitle());
@@ -85,7 +92,7 @@ public class ContentManagerIndex extends Window
 	public void viewContent(String id) throws Exception
 	{
 		MediaContent mcontent = this.getContentByID(id);
-		contentpopup = (Window) Executions.createComponents("form.zul", this, null);
+		contentpopup = (Window) Executions.createComponents("../cms/form.zul", this, null);
 		contentpopup.getFellow("updatebutton").setVisible(false);
 		((Textbox) contentpopup.getFellow("content_id")).setValue(mcontent.getID());
 		((Textbox) contentpopup.getFellow("content_title")).setValue(mcontent.getTitle());
@@ -153,7 +160,11 @@ public class ContentManagerIndex extends Window
 		String userid = (String) Sessions.getCurrent().getAttribute("userid");
 		StorageComponentImpl proxy = SystemDictionary.getSCProxy();
 		proxy.updateMediaContent(mcontent, userid);
-		Executions.getCurrent().sendRedirect("");
+		
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc(null);
+		comp.setSrc("../cms/index_content.zul");
 	}
 
 

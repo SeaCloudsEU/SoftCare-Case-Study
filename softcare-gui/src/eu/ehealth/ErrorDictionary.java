@@ -1,8 +1,12 @@
 package eu.ehealth;
 
+import java.util.Collection;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zul.Include;
+import eu.ehealth.utilities.ComponentsFinder;
 
 
 /**
@@ -89,7 +93,11 @@ public class ErrorDictionary {
 	 */
 	public static void redirectWithError(String URL){
 		Sessions.getCurrent().setAttribute("showerror", "1");
-		Executions.getCurrent().sendRedirect(URL);
+		//Executions.getCurrent().sendRedirect(URL);
+		
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc(URL);
 	}
 	
 	

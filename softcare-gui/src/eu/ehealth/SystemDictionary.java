@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import org.zkoss.util.resource.Labels;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -13,6 +14,8 @@ import org.apache.log4j.PropertyConfigurator;
 import eu.ehealth.security.KeyStoreConfig;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.SystemParameter;
+import it.polimi.tower4clouds.java_app_dc.Property;
+import it.polimi.tower4clouds.java_app_dc.Registry;
 
 
 /**
@@ -208,26 +211,22 @@ public class SystemDictionary
 	{
 		try 
 		{
-			webguiLog("INFO", "Initialization ...");
-			
-			//System.setProperty("https.protocols", "TLSv1");
-			//System.setProperty("force.http.jre.executor", "true");
-			System.setProperty("jsse.enableSNIExtension", "false");
+			webguiLog("INFO", "[SystemDictionary] Initialization ...");
 			
 			// WS-SECURITY properties
-			webguiLog("INFO", "Getting ws-security properties ...");
+			webguiLog("INFO", "[SystemDictionary] Getting ws-security properties ...");
 			
 			CONFIG_PROPERTIES = new PropertiesConfiguration("webgui.properties");
 			if ((CONFIG_PROPERTIES == null) || (CONFIG_PROPERTIES.isEmpty())) {
-				webguiLog("FATAL", "Error getting ws-security properties");
+				webguiLog("FATAL", "[SystemDictionary] Error getting ws-security properties");
 			}
 			else {
-				webguiLog("INFO", "ws-security properties loaded");
+				webguiLog("INFO", "[SystemDictionary] ws-security properties loaded");
 				try {
-					Iterator itr = CONFIG_PROPERTIES.getKeys();
+					Iterator<String> itr = CONFIG_PROPERTIES.getKeys();
 					while(itr.hasNext()) { // CONFIG_PROPERTIES.getKeys()
 						String key = (String) itr.next();
-						webguiLog("DEBUG", "..." + key + " : " + CONFIG_PROPERTIES.getString(key));
+						webguiLog("INFO", "[SystemDictionary] ..." + key + " : " + CONFIG_PROPERTIES.getString(key));
 					}
 				}
 				catch (Exception ex1) { }
@@ -238,7 +237,7 @@ public class SystemDictionary
 		}
 		
 		// Configure SSL parameters
-		webguiLog("INFO", "SSL parameters ...");
+		webguiLog("INFO", "[SystemDictionary] SSL parameters ...");
 		
 		try 
 		{
@@ -258,7 +257,7 @@ public class SystemDictionary
 		}
 		
 		// Global properties from database
-		webguiLog("INFO", "EHealth properties ...");
+		webguiLog("INFO", "[SystemDictionary] EHealth properties ...");
 		
 		try 
 		{
@@ -270,7 +269,7 @@ public class SystemDictionary
 			for (int i=0, max=l.size(); i<max; i++) {
 				PROPERTIES_HASHMAP.put(l.get(i)[0], l.get(i)[1]);
 				
-				webguiLog("DEBUG", "PROPERTIES_HASHMAP - " + l.get(i)[0] + " : " + l.get(i)[1]);
+				webguiLog("INFO", "[SystemDictionary] PROPERTIES_HASHMAP - " + l.get(i)[0] + " : " + l.get(i)[1]);
 			}
 		}
 		catch (Exception ex) 
@@ -278,22 +277,52 @@ public class SystemDictionary
 			logException(ex);
 		}
 		
-		webguiLog("INFO", "SystemDictionary initialized");
+		// data collectors
+		webguiLog("INFO", SystemDictionary.class.getName() + " : Data collectors ...");
+		String data_collectors = CONFIG_PROPERTIES.getString("data_collectors");
+		if ("true".equals(data_collectors)) 
+		{
+			webguiLog("INFO", "[SystemDictionary] Initializing data collectors ...");
+			try
+			{
+				Map<Property, String> applicationProperties = new HashMap<Property, String>();
+				applicationProperties.put(Property.ID, "App1");
+				applicationProperties.put(Property.TYPE, "App");
+				applicationProperties.put(Property.VM_ID, "Frontend1");
+				applicationProperties.put(Property.VM_TYPE, "Frontend");
+				applicationProperties.put(Property.CLOUD_PROVIDER_ID, "CF");
+				applicationProperties.put(Property.CLOUD_PROVIDER_TYPE, "PaaS");
+				
+				String mpIp = CONFIG_PROPERTIES.getString("MODACLOUDS_T4C_ENDPOINT_IP", "109.231.126.100");
+				int mpPort = CONFIG_PROPERTIES.getInt("MODACLOUDS_T4C_ENDPOINT_PORT", 8170);
+				
+				Registry.initialize(mpIp, mpPort, applicationProperties, "eu.ehealth.ws_client");
+				Registry.startMonitoring();
+				
+				webguiLog("INFO", SystemDictionary.class.getName() + " : Data Collector initialized");
+			}
+			catch (Exception e)
+			{
+				logException(e);
+			}
+		}
+		else 
+		{
+			webguiLog("INFO", SystemDictionary.class.getName() + " : Data collectors not enabled");
+		}
+		webguiLog("INFO", "[SystemDictionary] SystemDictionary initialized");
 	}
 	
 	
 	/**
-	 * Initialization
+	 * 
+	 * @param userId
+	 * @param userName
 	 */
-	public static void init()
+	public static void logoutUser(String userId, String userName)
 	{
-		webguiLog("INFO", "SystemDictionary initialized (2)");
-
-		// FIDDLER TODO delete
-		/*System.setProperty("http.proxyHost", "127.0.0.1");
-	    System.setProperty("https.proxyHost", "127.0.0.1");
-	    System.setProperty("http.proxyPort", "8888");
-	    System.setProperty("https.proxyPort", "8888");*/
+		webguiLog("INFO", "[SystemDictionary] LOGOUT... user: " + userName + " , id: " + userId);
+		getSCProxy().logout(userId, "");
 	}
 
 
@@ -333,36 +362,43 @@ public class SystemDictionary
 	 */
 	public static void webguiLog(String type, String message)
 	{
-		if (logger == null)
+		try 
 		{
-			logger = Logger.getLogger("WebGUI");
-			PropertyConfigurator.configure(SystemDictionary.class.getClassLoader().getResource("log4j.properties"));
-			logger.setLevel(APPLICATION_DEBUG_LEVEL);
+			if (logger == null)
+			{
+				logger = Logger.getLogger("WebGUI");
+				PropertyConfigurator.configure(SystemDictionary.class.getClassLoader().getResource("log4j.properties"));
+				logger.setLevel(APPLICATION_DEBUG_LEVEL);
+			}
+			
+			if (type.equals("INFO"))
+			{
+				logger.info(message);
+			}
+			else if (type.equals("DEBUG"))
+			{
+				logger.debug(message);
+			}
+			else if (type.equals("WARN"))
+			{
+				logger.warn(message);
+			}
+			else if (type.equals("ERROR"))
+			{
+				logger.error(message);
+			}
+			else if (type.equals("FATAL"))
+			{
+				logger.fatal(message);
+			}
+			else if (type.equals("TRACE"))
+			{
+				logger.trace(message);
+			}
 		}
-		
-		if (type.equals("INFO"))
+		catch (Exception ex) 
 		{
-			logger.info(message);
-		}
-		else if (type.equals("DEBUG"))
-		{
-			logger.debug(message);
-		}
-		else if (type.equals("WARN"))
-		{
-			logger.warn(message);
-		}
-		else if (type.equals("ERROR"))
-		{
-			logger.error(message);
-		}
-		else if (type.equals("FATAL"))
-		{
-			logger.fatal(message);
-		}
-		else if (type.equals("TRACE"))
-		{
-			logger.trace(message);
+			ex.printStackTrace();
 		}
 	}
 	
@@ -691,6 +727,129 @@ public class SystemDictionary
 				break;
 		}
 		return Labels.getLabel(ret);
+	}
+	
+	
+	/**
+	 * Gets the URL from Web services
+	 * @return
+	 */
+	public static String getWebServicesURL()
+	{
+		String wsUrl = getWebServicesURLFromSysProperties("storagecomponent.name", "storagecomponent.uri.extension");
+		if (!wsUrl.isEmpty())
+		{
+			return wsUrl;
+		}
+		
+		return getWebServicesURLFromPropertiesFile("storagecomponent.uri");
+	}
+	
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public static String getthirdPartyServicesURL()
+	{
+		String wsUrl = getWebServicesURLFromSysProperties("storagecomponent.name", "thirdpartycomponent.uri.extension");
+		if (!wsUrl.isEmpty())
+		{
+			return wsUrl;
+		}
+		
+		return getWebServicesURLFromPropertiesFile("thirdpartycomponent.uri");
+	}
+	
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public static String getForumURL()
+	{
+		String wsUrl = getWebServicesURLFromSysProperties("softcareforum.name", "softcareforum.uri.index.extension");
+		if (!wsUrl.isEmpty())
+		{
+			return wsUrl;
+		}
+		
+		return getWebServicesURLFromPropertiesFile("softcareforum.uri.index");
+	}
+	
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public static String getForumConfigURL()
+	{
+		String wsUrl = getWebServicesURLFromSysProperties("softcareforum.name", "softcareforum.uri.install.extension");
+		if (!wsUrl.isEmpty())
+		{
+			return wsUrl;
+		}
+		
+		return getWebServicesURLFromPropertiesFile("softcareforum.uri.install");
+	}
+	
+	
+	/**
+	 * Gets the property value from system properties, where the web service URL is stored
+	 * 
+	 * @param name
+	 * @param extension
+	 * @return
+	 */
+	private static String getWebServicesURLFromSysProperties(String name, String extension)
+	{
+		String propertyWsUrl = SystemDictionary.CONFIG_PROPERTIES.getString(name);
+		String propertyWsUrlExt = SystemDictionary.CONFIG_PROPERTIES.getString(extension);
+		
+		if ((propertyWsUrl != null) && (!propertyWsUrl.isEmpty()))
+		{
+			webguiLog("INFO", SystemDictionary.class.getName() + " : Use URL from system properties ... '" + propertyWsUrl + "'");
+			
+			// User-Provided:
+			//		eHealth-ws: eHealth-ws.95.211.172.243.xip.io
+			String propertyValue = System.getProperty(propertyWsUrl);
+			if ((propertyValue == null) || (propertyValue.isEmpty()))
+				propertyValue = System.getenv(propertyWsUrl);
+			
+			if ((propertyValue == null) || (propertyValue.isEmpty()))
+			{
+				webguiLog("ERROR", SystemDictionary.class.getName() + " : URL from system properties is empty or is NULL");
+				return "";
+			}
+			
+			webguiLog("INFO", SystemDictionary.class.getName() + " : System property value for '" + propertyWsUrl + "' is ... " + propertyValue);
+			// eHealth-ws.95.211.172.243.xip.io ----> http://eHealth-ws.95.211.172.243.xip.io/StorageComponent?wsdl
+			// TODO review
+			webguiLog("INFO", SystemDictionary.class.getName() + " : Returning value '" + "http://" + propertyValue + propertyWsUrlExt + " ...");
+			return "http://" + propertyValue + propertyWsUrlExt;
+		}
+		
+		return "";
+	}
+	
+	
+	/**
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	private static String getWebServicesURLFromPropertiesFile(String uri)
+	{
+		String wsUrl = SystemDictionary.CONFIG_PROPERTIES.getString(uri);
+		
+		if ((wsUrl == null) || (wsUrl.isEmpty()))
+		{
+			webguiLog("ERROR", SystemDictionary.class.getName() + " : URL from properties file is empty or is NULL");
+			return "";
+		}
+		
+		webguiLog("INFO", SystemDictionary.class.getName() + " : URL from properties file ... " + wsUrl);
+		return wsUrl;
 	}
 
 

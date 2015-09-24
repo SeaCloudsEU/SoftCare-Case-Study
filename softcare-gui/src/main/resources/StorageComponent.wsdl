@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?><wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://ehealth.eu/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns2="http://schemas.xmlsoap.org/soap/http" xmlns:ns1="http://ehealth.eu/StorageComponent/" name="StorageComponentImplService" targetNamespace="http://ehealth.eu/">
-  <wsdl:import location="http://e-health-ws-app-eu.herokuapp.com/StorageComponent?wsdl" 
-  		namespace="http://ehealth.eu/StorageComponent/">
-    </wsdl:import>
+  <wsdl:import location="http://softcare-ws.95.211.172.243.xip.io/StorageComponent?wsdl" namespace="http://ehealth.eu/StorageComponent/">
+  </wsdl:import>
   <wsdl:binding name="StorageComponentImplServiceSoapBinding" type="ns1:StorageComponent">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <wsdl:operation name="CreateCarer">
@@ -283,12 +282,66 @@
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="getUserIdByAdminId">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getUserIdByAdminId">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getUserIdByAdminIdResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="getUserIdByCarerId">
       <soap:operation soapAction="" style="document"/>
       <wsdl:input name="getUserIdByCarerId">
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="getUserIdByCarerIdResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getUserIdByClinicianId">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getUserIdByClinicianId">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getUserIdByClinicianIdResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAppConfig">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getAppConfig">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getAppConfigResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listOfUsers">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="listOfUsers">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="listOfUsersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="lockUser">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="lockUser">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="lockUserResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateAppConfigRow">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateAppConfigRow">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateAppConfigRowResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
@@ -625,6 +678,24 @@
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="logout">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="logout">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="logoutResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConnectedUsers">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getConnectedUsers">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getConnectedUsersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="ChangeTaskStatus">
       <soap:operation soapAction="http://ehealth.eu/StorageComponent/ChangeTaskStatus" style="document"/>
       <wsdl:input name="ChangeTaskStatus">
@@ -709,7 +780,7 @@
   </wsdl:binding>
   <wsdl:service name="StorageComponentImplService">
     <wsdl:port binding="tns:StorageComponentImplServiceSoapBinding" name="StorageComponentImplPort">
-      <soap:address location="http://e-health-ws-app-eu.herokuapp.com/StorageComponent?wsdl"/>
+      <soap:address location="http://softcare-ws.95.211.172.243.xip.io/StorageComponent?wsdl"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

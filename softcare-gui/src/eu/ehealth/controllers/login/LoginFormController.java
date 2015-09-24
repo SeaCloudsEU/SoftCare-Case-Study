@@ -88,9 +88,9 @@ public class LoginFormController extends GenericForwardComposer
 			String adminlbl = SystemDictionary.USERTYPE_ADMIN;
 			Boolean isadmin = adminlbl.equals(usertype);
 			session.setAttribute("user", login_user.getValue());
-			session.setAttribute("userid",result.getCode());
-			session.setAttribute("usertype",usertype);
-			session.setAttribute("isadmin",isadmin);
+			session.setAttribute("userid", result.getCode());
+			session.setAttribute("usertype", usertype);
+			session.setAttribute("isadmin", isadmin);
 
 			pageRedirect = "/index.zul";
 		}

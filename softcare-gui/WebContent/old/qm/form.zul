@@ -1,0 +1,85 @@
+<?page id="pageqm" contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+
+<zk>
+	<include src="/inc/header.zul"/>
+	
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		
+		
+		String title = Labels.getLabel("qm.new");
+		String btnyesno = Labels.getLabel("qm.new.yesno");
+		String btnmany = Labels.getLabel("qm.new.manyansw");
+		String btnfree = Labels.getLabel("qm.new.open");
+		
+		String questid = Labels.getLabel("qm.new.id");
+		String versionl = Labels.getLabel("qm.new.version");
+		String descl = Labels.getLabel("qm.new.desc");
+		String questionsl = Labels.getLabel("qm.new.questions");
+		String idl = Labels.getLabel("qm.new.questions.id");
+		String typel = Labels.getLabel("qm.new.questions.type");
+		String textl = Labels.getLabel("qm.new.questions.text");
+		String ansl = Labels.getLabel("qm.new.questions.answers");
+		String errorno = Labels.getLabel("error.no.empty");
+		
+		page.setTitle(title);
+	</zscript>
+	
+	<window id="qm_sketch" sclass="centerwin" width="900px" use="eu.ehealth.qm.QuestionnaireFormWindow">
+		<vbox>
+			<label value="${title}" sclass="newitem" />
+			<grid>
+				<columns>
+					<column align="right" width="200px" valign="top"/>
+					<column align="left"/>
+				</columns>
+				<rows>
+					<row>
+						<label value="${versionl}"/>
+						<textbox id="versionfield"/>
+					</row>
+					<row>
+						<label value="${descl}"/>
+						<textbox id="qtitle" constraint="no empty: ${errorno }" multiline="true" rows="3" width="75%"/>
+					</row>
+					<row>
+						<label value="${questionsl}"/>
+						<grid>
+							<columns>
+								<column label="${idl}" width="40px" sort="auto"/>
+								<column label="Position"/>
+								<column label="${typel}" width="80px"/>
+								<column label="${textl}"/>
+								<column label="#${ansl}" width="80px"/>
+								<column label="Parent Q." width="80px"/>
+								<column label="Add child" width="80px"/>
+								<column  width="30px"/>
+							</columns>
+							<rows id="rows_questions">
+							</rows>
+						</grid>
+					</row>
+					<row>
+						<label value=""/>
+						<hbox>
+							<button label="Add question" onClick="qm_sketch.showAnswerWindow()"/>
+						</hbox>
+					</row>
+				</rows>
+			</grid>
+			<button label="Save Questionnaire" onClick="qm_sketch.saveQuestionnaire()"/>
+		</vbox>
+	</window>
+	
+	<zscript>
+		String q = (String)Executions.getCurrent().getParameter("q");
+		if(q!=null){
+			//TODO set information on the questionnarie
+			qm_sketch.updatingQuestionnaire(q);
+		}
+	</zscript>
+	
+	<include src="/inc/footer.zul"/>
+</zk>

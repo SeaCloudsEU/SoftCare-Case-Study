@@ -1,17 +1,24 @@
 package eu.ehealth.controllers;
 
+import java.util.Collection;
 import java.util.StringTokenizer;
+
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.Window;
+
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.OperationResult;
 
@@ -44,18 +51,20 @@ public class IndexAdministratorsWindow extends Window
 		StorageComponentImpl proxy = new StorageComponentImpl();
 		try
 		{
-			proxy.deleteClinician(this.adminid, userid);
+			proxy.deleteAdministrator(this.adminid, userid);
+			
+			this.adminid = null;
+			
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../administration/index_content.zul");
 		}
 		catch (Exception re)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(re);
+			Messagebox.show("#TXT# Error : " + re.getMessage(), "#TXT# Delete Administrator", Messagebox.OK, Messagebox.ERROR);
 		}
-		finally
-		{
-			this.adminid = null;
-			Executions.sendRedirect("/administration/index.zul");
-		}
-
 	}
 
 
@@ -68,16 +77,12 @@ public class IndexAdministratorsWindow extends Window
 	public void deleteAdministratorMsg(String id_personid)
 	{
 		try {
-			SystemDictionary.webguiLog("DEBUG", "[" + id_personid + "]");
 			StringTokenizer tokens = new StringTokenizer(id_personid, "-");
 
 			String userid = (String) Sessions.getCurrent().getAttribute("userid");
 			
 			if ((tokens == null) || (tokens.countTokens() != 2)) 
 			{
-				SystemDictionary.webguiLog("ERROR", "Tokens > 2 : " + id_personid + "");
-				
-				SystemDictionary.webguiLog("DEBUG", "Internal error");
 				Window win = (Window) getFellow("internalformerror");
 				((Label) win.getFellow("errorlbl")).setValue("-Internal error-");
 				getFellow("internalformerror").setVisible(true);
@@ -90,13 +95,10 @@ public class IndexAdministratorsWindow extends Window
 			StorageComponentImpl proxy = new StorageComponentImpl();
 			OperationResult ores = proxy.getUserIdByPersonId(personid, SystemDictionary.USERTYPE_ADMIN_INT, userid);
 			
-			SystemDictionary.webguiLog("DEBUG", " ores.getCode() : " + ores.getCode() + "   //   userid : " + userid);
-			
 			if (ores.getCode().equals(userid)) {
 				// CAN'T DELETE YOURSELF
-				SystemDictionary.webguiLog("DEBUG", "An admin can't delete himself");
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("-YOU CAN'T DELETE YOURSELF-");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# -YOU CAN'T DELETE YOURSELF-");
 				getFellow("internalformerror").setVisible(true);
 				return;
 			}
@@ -126,12 +128,12 @@ public class IndexAdministratorsWindow extends Window
 			}
 			catch (Exception ee)
 			{
-				SystemDictionary.webguiLog("WARN", ee.getMessage());
+				SystemDictionary.logException(ee);
 			}
 		}
 		catch (Exception ee)
 		{
-			SystemDictionary.webguiLog("ERROR", ee.getMessage());
+			SystemDictionary.logException(ee);
 		}
 	}
 
@@ -143,14 +145,10 @@ public class IndexAdministratorsWindow extends Window
 	 */
 	public void updateAdministrator(String id_personid)
 	{
-		SystemDictionary.webguiLog("DEBUG", "[" + id_personid + "]");
 		StringTokenizer tokens = new StringTokenizer(id_personid, "-");
 	
 		if ((tokens == null) || (tokens.countTokens() != 2))
 		{
-			SystemDictionary.webguiLog("ERROR", "Tokens > 2 : " + id_personid + "");
-			
-			SystemDictionary.webguiLog("DEBUG", "Internal error");
 			Window win = (Window) getFellow("internalformerror");
 			((Label) win.getFellow("errorlbl")).setValue("-Internal error-");
 			getFellow("internalformerror").setVisible(true);
@@ -159,7 +157,9 @@ public class IndexAdministratorsWindow extends Window
 
 		String id = tokens.nextToken().trim();
 		
-		Executions.sendRedirect("/administration/update.zul?clinid=" + id);
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc("../administration/update.zul?clinid=" + id);
 	}
 
 
@@ -170,14 +170,10 @@ public class IndexAdministratorsWindow extends Window
 	 */
 	public void detailsAdministrator(String id_personid)
 	{
-		SystemDictionary.webguiLog("DEBUG", "[" + id_personid + "]");
 		StringTokenizer tokens = new StringTokenizer(id_personid, "-");
 	
 		if ((tokens == null) || (tokens.countTokens() != 2))
 		{
-			SystemDictionary.webguiLog("ERROR", "Tokens > 2 : " + id_personid + "");
-			
-			SystemDictionary.webguiLog("DEBUG", "Internal error");
 			Window win = (Window) getFellow("internalformerror");
 			((Label) win.getFellow("errorlbl")).setValue("-Internal error-");
 			getFellow("internalformerror").setVisible(true);
@@ -186,7 +182,9 @@ public class IndexAdministratorsWindow extends Window
 
 		String id = tokens.nextToken().trim();
 		
-		Executions.sendRedirect("/administration/details.zul?clinid=" + id);
+		Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+		Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+		comp.setSrc("../administration/details.zul?clinid=" + id);
 	}
 
 

@@ -58,4 +58,23 @@ public class Utilities
     }
 	
 	
+	/**
+	 * 
+	 * @param sobj
+	 * @param defaultVal
+	 * @return
+	 */
+	public static int getIntValue(String sobj, int defaultVal) 
+	{
+		try 
+		{
+			return Integer.parseInt(sobj);
+		}
+		catch (Exception ex) {
+			SystemDictionary.logException(ex);
+			return defaultVal;
+		}
+	}
+	
+	
 }

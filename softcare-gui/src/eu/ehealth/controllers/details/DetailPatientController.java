@@ -56,7 +56,6 @@ public class DetailPatientController extends DetailSDController
 	protected SocialWorker currentsocialworker = null;
 	protected Consulter currentconsulter = null;
 	protected GeneralPractitioner currentgralprac = null;
-	
 	private int patientUserId = -1;
 
 
@@ -112,7 +111,7 @@ public class DetailPatientController extends DetailSDController
 		Button btn = new Button();
 		String text = Labels.getLabel("patients.update.title");
 		btn.setLabel(text);
-		btn.setHref("/patients/update.zul?patid=" + this.currentid);
+		btn.setHref("../patients/update.zul?patid=" + this.currentid);
 
 		Button btn1 = new Button();
 		String text2 = Labels.getLabel("common.tasks.new");
@@ -182,14 +181,14 @@ public class DetailPatientController extends DetailSDController
 			{
 				throw new Exception("Assessment not found");
 			}
-			assessmentWindow = (AssessmentPopupController) Executions.createComponents("assessment.zul", this, null);
+			assessmentWindow = (AssessmentPopupController) Executions.createComponents("../patients/assessment.zul", this, null);
 			this.setAssessmentValues(assessmentWindow, assessment);
 			assessmentWindow.setVisible(true);
 			assessmentWindow.doModal();
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			SystemDictionary.logException(e);
 		}
 	}
 
@@ -201,7 +200,7 @@ public class DetailPatientController extends DetailSDController
 	 */
 	public void createAssessment() throws SuspendNotAllowedException, InterruptedException
 	{
-		assessmentWindow = (AssessmentPopupController) Executions.createComponents("assessment.zul", this, null);
+		assessmentWindow = (AssessmentPopupController) Executions.createComponents("../patients/assessment.zul", this, null);
 		this.turnAssessment2Form(assessmentWindow);
 		assessmentWindow.setVisible(true);
 		assessmentWindow.doModal();
@@ -316,7 +315,7 @@ public class DetailPatientController extends DetailSDController
 		}
 		catch (Exception re)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(re);
 		}
 		return lst;
 	}
@@ -436,20 +435,16 @@ public class DetailPatientController extends DetailSDController
 		calto.setTime(this.calendars.getEndDate());
 		try
 		{
-			SystemDictionary.webguiLog("INFO", "CARER = " + this.currentcarers.getID());
 			StorageComponentImpl proxy = new StorageComponentImpl();
 			OperationResult currentor = proxy.getUserIdByCarerId(this.currentcarers.getID(), userid);
-			SystemDictionary.webguiLog("INFO", "USER TASKS: " + currentor.getCode());
 			Task[] tasklist = proxy.getUserPlannedTasksArr(currentor.getCode(), calfrom, calto, SystemDictionary.getLocale(), userid);
 			this.calmodel = new SimpleCalendarModel();
 			if (tasklist != null)
 			{
-				SystemDictionary.webguiLog("DEBUG", "TASKS LENGHT: " + tasklist.length);
 				OperationResult currentuserid = proxy.getUserIdByPatientId(this.currentid, userid);
 				for (int i = 0; i < tasklist.length; i++)
 				{
 					boolean add = true;
-					SystemDictionary.webguiLog("DEBUG", "COMPARE: " + tasklist[i].getObjectID() + ":" + currentuserid.getCode());
 					if (!tasklist[i].getObjectID().equals(currentuserid.getCode()))
 					{
 						continue;
@@ -529,7 +524,7 @@ public class DetailPatientController extends DetailSDController
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			SystemDictionary.logException(e);
 		}
 		finally
 		{
@@ -544,10 +539,9 @@ public class DetailPatientController extends DetailSDController
 	 * @throws SuspendNotAllowedException
 	 * @throws InterruptedException
 	 */
-	public void createRemoveMassivelyDialog()
-			throws SuspendNotAllowedException, InterruptedException
+	public void createRemoveMassivelyDialog() throws SuspendNotAllowedException, InterruptedException
 	{
-		removeMassivelyDialog = (Window) Executions.createComponents("removetasks.zul", this, null);
+		removeMassivelyDialog = (Window) Executions.createComponents("../patients/removetasks.zul", this, null);
 		removeMassivelyDialog.setTitle("New Task");
 		removeMassivelyDialog.setVisible(true);
 		removeMassivelyDialog.doModal();
@@ -562,7 +556,7 @@ public class DetailPatientController extends DetailSDController
 	 */
 	public void createWeightMeasurementDialog() throws SuspendNotAllowedException, InterruptedException
 	{
-		weightMeasurementDialog = (Window) Executions.createComponents("measurement.zul", this, null);
+		weightMeasurementDialog = (Window) Executions.createComponents("../patients/measurement.zul", this, null);
 		weightMeasurementDialog.setVisible(true);
 		weightMeasurementDialog.doModal();
 
@@ -572,11 +566,6 @@ public class DetailPatientController extends DetailSDController
 		((MeasurementPopupController) weightMeasurementDialog).setPatientid(this.currentid);
 		((MeasurementPopupController) weightMeasurementDialog).setFrom(bdate);
 		((MeasurementPopupController) weightMeasurementDialog).setTo(edate);
-
-		// StorageComponentImpl proxy = SystemDictionary.getSCProxy();
-		// TODO Continue working
-		// Measurement[] meas = proxy.getPatientMeasurementArr(this.currentid,
-		// measurementType, fromData, toData, userId)
 	}
 
 
@@ -586,9 +575,9 @@ public class DetailPatientController extends DetailSDController
 	 * @throws InterruptedException
 	 * @throws RemoteException
 	 */
-	public void createPasswordDialog() throws SuspendNotAllowedException, InterruptedException, RemoteException
+	public void createPasswordDialog(String pat_id) throws SuspendNotAllowedException, InterruptedException, RemoteException
 	{
-		ChangePassword win = (ChangePassword) Executions.createComponents("password.zul", this, null);
+		ChangePassword win = (ChangePassword) Executions.createComponents("../patients/password.zul", this, null);
 		this.appendChild(win);
 		win.setuserid("" + patientUserId);
 		win.doModal();

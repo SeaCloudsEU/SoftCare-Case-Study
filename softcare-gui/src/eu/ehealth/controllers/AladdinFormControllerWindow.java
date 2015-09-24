@@ -64,17 +64,13 @@ public class AladdinFormControllerWindow extends Window
 	/**
 	 * Default constructor
 	 */
-	public AladdinFormControllerWindow()
-	{
-	}
+	public AladdinFormControllerWindow() { }
 
 
 	/**
 	 * Override this method to build a concrete form
 	 */
-	public void buildForm()
-	{
-	}
+	public void buildForm() { }
 
 
 	/**
@@ -172,13 +168,11 @@ public class AladdinFormControllerWindow extends Window
 		Address newAddress = new Address(street, streetno, city, county, country, zipcode, notes, isPrimary);
 		if (this.addresses == null || this.addresses.length == 0)
 		{
-			SystemDictionary.webguiLog("TRACE", "Address List SIZE before: 0");
 			this.addresses = new Address[1];
 			this.addresses[0] = newAddress;
 		}
 		else
 		{
-			SystemDictionary.webguiLog("TRACE", "Address List SIZE before: " + this.addresses.length);
 			Address[] helperAddress = new Address[this.addresses.length + 1];
 			for (int i = 0; i < this.addresses.length; i++)
 			{
@@ -187,7 +181,6 @@ public class AladdinFormControllerWindow extends Window
 			helperAddress[this.addresses.length] = newAddress;
 			this.addresses = helperAddress;
 		}
-		SystemDictionary.webguiLog("TRACE", "Address List SIZE after: " + this.addresses.length);
 		this.insertAddressRow(newAddress);
 		this.removeChild(this.popupaddresses);
 	}
@@ -271,7 +264,6 @@ public class AladdinFormControllerWindow extends Window
 		String notes = ((Textbox) windowCom.getFellow("pat_comnote")).getValue();
 		
 		// check email / phone / other value
-		SystemDictionary.webguiLog("DEBUG", "Validating communication value ... ");
 		if (type.equals("phone")) {
 			if (!Validator.validatePhone(value)) {
 				Window win = (Window) windowCom.getFellow("internalcommformerror");
@@ -436,10 +428,10 @@ public class AladdinFormControllerWindow extends Window
 		{
 			rowsA.add(new SimpleFieldData(name, "pat_name", "no empty", "", "*")); 
 			rowsA.add(new SimpleFieldData(surname, "pat_sname", "no empty", "", "*")); 
-			rowsA.add(new SimpleFieldData("Username", "pat_uname", "no empty", "", "*"));
+			rowsA.add(new SimpleFieldData("#TXT# Username", "pat_uname", "no empty", "", "*"));
 			
-			rowsA.add(new SimpleFieldData("Password", "pat_pwd", "no empty, " + PSSWD_REG_EXPRESSION, "password", "* (at least one character 'a-zA-Z' and at least one digit 0-9. Length 8-20)"));
-			rowsA.add(new SimpleFieldData("Repeat password", "pat_pwd2", "no empty, " + PSSWD_REG_EXPRESSION, "password", "*"));
+			rowsA.add(new SimpleFieldData("#TXT# Password", "pat_pwd", "no empty, " + PSSWD_REG_EXPRESSION, "password", "* (at least one character 'a-zA-Z' and at least one digit 0-9. Length 8-20)"));
+			rowsA.add(new SimpleFieldData("#TXT# Repeat password", "pat_pwd2", "no empty, " + PSSWD_REG_EXPRESSION, "password", "*"));
 			
 			this.appendColumnsFields3cols(pgrid); 
 			this.appendTextboxFields3cols(rowsA, rows); 
@@ -448,7 +440,7 @@ public class AladdinFormControllerWindow extends Window
 		{
 			rowsA.add(new SimpleFieldData(name, "pat_name", "no empty")); 
 			rowsA.add(new SimpleFieldData(surname, "pat_sname", "no empty")); 
-			rowsA.add(new SimpleFieldData("Username", "pat_uname", "no empty"));
+			rowsA.add(new SimpleFieldData("#TXT# Username", "pat_uname", "no empty"));
 			
 			this.appendColumns(pgrid);
 			this.appendTextboxFields(rowsA, rows); 
@@ -466,7 +458,7 @@ public class AladdinFormControllerWindow extends Window
 	protected void addBirthdayField()
 	{
 		ArrayList<SimpleFieldData> rowsA = new ArrayList<SimpleFieldData>();
-		rowsA.add(new SimpleFieldData("Birthdate (dd/MM/yyyy)", "pat_age", "no empty"));
+		rowsA.add(new SimpleFieldData("#TXT# Birthdate (dd/MM/yyyy)", "pat_age", "no empty"));
 
 		Grid pgrid = new Grid();
 		pgrid.setSclass("grid");
@@ -603,15 +595,13 @@ public class AladdinFormControllerWindow extends Window
 	 */
 	protected void addAddressFieldsValues()
 	{
-		if (this.currentdata.getAddressList() != null
-				&& this.currentdata.getAddressList().getAddress() != null
+		if (this.currentdata.getAddressList() != null && this.currentdata.getAddressList().getAddress() != null
 				&& this.currentdata.getAddressList().getAddress().size() > 0)
 		{
 			this.addresses = this.currentdata.getAddressList().getAddress().toArray(
 					new Address[this.currentdata.getAddressList().getAddress().size()]);
 			if (this.addresses != null)
 			{
-				SystemDictionary.webguiLog("DEBUG", "Addresses LENGTH: " + this.addresses.length);
 				for (int i = 0; i < this.addresses.length; i++)
 				{
 					if (this.addresses[i] != null)
@@ -647,7 +637,6 @@ public class AladdinFormControllerWindow extends Window
 			Button btnaddress = new Button(comaddlbl);
 			// This listener will be in charge of showing the popup
 			btnaddress.addEventListener("onClick", new EventListener() {
-
 				public void onEvent(Event arg0) throws Exception
 				{
 					addCommunicationWindow();
@@ -690,8 +679,8 @@ public class AladdinFormControllerWindow extends Window
 		}
 		else 
 		{
-			contact_typelist.add(new SimpleFieldData("email", "email"));
-			contact_typelist.add(new SimpleFieldData("phone", "phone"));
+			contact_typelist.add(new SimpleFieldData("#TXT# email", "email"));
+			contact_typelist.add(new SimpleFieldData("#TXT# phone", "phone"));
 		}
 
 		this.popupcommunications = new Window();
@@ -753,16 +742,9 @@ public class AladdinFormControllerWindow extends Window
 
 		Label errorlbl = new Label();
 		errorlbl.setId("errorlbl");
-
-		//Label errorclose = new Label();
-		//errorclose.setValue(" Close");
-		//errorclose.setSclass("link");
-		//errorclose.addEventListener("onClick", new ErrorWindowListener(errorwin));
-
+		
 		errorwin.appendChild(errorlbl);
-		//errorwin.appendChild(errorclose);
 
-		//this.appendChild(errorwin);
 		return errorwin;
 	}
 
@@ -772,8 +754,7 @@ public class AladdinFormControllerWindow extends Window
 	 */
 	protected void addCommunicationFieldsValues()
 	{
-		if (this.currentdata.getCommunicationList() != null
-				&& this.currentdata.getCommunicationList().getCommunication() != null
+		if (this.currentdata.getCommunicationList() != null && this.currentdata.getCommunicationList().getCommunication() != null
 				&& this.currentdata.getCommunicationList().getCommunication().size() > 0)
 		{
 			this.communications = this.currentdata.getCommunicationList().getCommunication().toArray(
@@ -857,7 +838,6 @@ public class AladdinFormControllerWindow extends Window
 
 			Textbox tboxe = new Textbox();
 			tboxe.setId(elem.getId());
-			SystemDictionary.webguiLog("TRACE", "DETAILS: " + this.detailsmode);
 			if (elem.getConstraints() != null)
 			{
 				tboxe.setConstraint(elem.getConstraints());
@@ -975,7 +955,6 @@ public class AladdinFormControllerWindow extends Window
 
 			Intbox tboxe = new Intbox();
 			tboxe.setId(elem.getId());
-			SystemDictionary.webguiLog("TRACE", "DETAILS: " + this.detailsmode);
 			if (elem.getConstraints() != null)
 			{
 				tboxe.setConstraint(elem.getConstraints());
@@ -1011,7 +990,6 @@ public class AladdinFormControllerWindow extends Window
 			tboxe.setId(elem.getId());
 			tboxe.setFormat("dd/MM/yyyy");
 
-			SystemDictionary.webguiLog("TRACE", "DETAILS: " + this.detailsmode);
 			if (elem.getConstraints() != null)
 			{
 				tboxe.setConstraint(elem.getConstraints());
@@ -1165,7 +1143,7 @@ public class AladdinFormControllerWindow extends Window
 			if (this.addresses == null || this.communications == null || this.addresses.length == 0 || this.communications.length == 0)
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You cannot create a user without any address or any way to communicate with");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You cannot create a user without any address or any way to communicate with");
 				getFellow("internalformerror").setVisible(true);
 				
 				return false;
@@ -1175,7 +1153,7 @@ public class AladdinFormControllerWindow extends Window
 			if (((Textbox) getFellow("pat_name")).getValue() == null || ((Textbox) getFellow("pat_name")).getValue().trim().equals(""))
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must enter a valid name");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must enter a valid name");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_name")).select();
@@ -1184,16 +1162,17 @@ public class AladdinFormControllerWindow extends Window
 			else if (((Textbox) getFellow("pat_sname")).getValue() == null || ((Textbox) getFellow("pat_sname")).getValue().trim().equals(""))
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must enter a valid surname");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must enter a valid surname");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_sname")).select();
 				return false;
 			}
-			else if (((Textbox) getFellow("pat_uname")).getValue() == null || ((Textbox) getFellow("pat_uname")).getValue().trim().equals(""))
+			else if ( (isNewUser) && 
+						(((Textbox) getFellow("pat_uname")).getValue() == null || ((Textbox) getFellow("pat_uname")).getValue().trim().equals("")) )
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must enter a valid username");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must enter a valid username");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_uname")).select();
@@ -1231,7 +1210,7 @@ public class AladdinFormControllerWindow extends Window
 			if (((Textbox) getFellow("pat_pwd")).getValue() == null || ((Textbox) getFellow("pat_pwd")).getValue().trim().equals(""))
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must enter a valid password");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must enter a valid password");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_pwd")).select();
@@ -1240,7 +1219,7 @@ public class AladdinFormControllerWindow extends Window
 			else if (((Textbox) getFellow("pat_pwd2")).getValue() == null || ((Textbox) getFellow("pat_pwd2")).getValue().trim().equals(""))
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must enter a valid password");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must enter a valid password");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_pwd2")).select();
@@ -1249,7 +1228,7 @@ public class AladdinFormControllerWindow extends Window
 			else if (!((Textbox) getFellow("pat_pwd2")).getValue().equals(((Textbox) getFellow("pat_pwd")).getValue())) 
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("Password fields must match");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# Password fields must match");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_pwd2")).select();
@@ -1258,7 +1237,7 @@ public class AladdinFormControllerWindow extends Window
 			else if ( ((Textbox) getFellow("pat_pwd")).getValue().length() < 8 || ((Textbox) getFellow("pat_pwd")).getValue().length() > 20 ) 
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("Password must have at least 8 characters (max 20). Password must have atleast one numeric and one character.");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# Password must have at least 8 characters (max 20). Password must have atleast one numeric and one character.");
 				getFellow("internalformerror").setVisible(true);
 				
 				((Textbox) getFellow("pat_pwd2")).select();

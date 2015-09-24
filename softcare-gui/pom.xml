@@ -1,13 +1,28 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>seaclouds_gui</groupId>
-	<artifactId>seaclouds_gui</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<groupId>softcare-gui</groupId>
+	<artifactId>softcare-gui</artifactId>
+	<version>0.0.2</version>
 	<packaging>war</packaging>
+	<name>softcare-gui</name>
+	
+	<!-- SEACLOUDS DATA COLLECTOR -->
+	<repositories>
+		<repository>
+			<id>deib-polimi-releases</id>
+			<url>https://github.com/deib-polimi/deib-polimi-mvn-repo/raw/master/releases</url>
+		</repository>
+	</repositories>
 	
 	<dependencies>
+		<!-- SEACLOUDS DATA COLLECTOR -->
+		<dependency>
+		    <groupId>it.polimi.tower4clouds</groupId>
+		    <artifactId>java-app-dc</artifactId>
+		    <version>0.2.3</version>
+		</dependency>
+		
 		<!-- ZK -->
 		<dependency>
 			<groupId>org.zkoss.common</groupId>
@@ -34,12 +49,12 @@
 			<artifactId>zhtml</artifactId> 
 			<version>${zk-version}</version>
 		</dependency>
-		<!-- ZK CALENDAR -->
-		<!--<dependency>
-			<groupId>org.zkoss.calendar</groupId>
-			<artifactId>calendar</artifactId>
-			<version>${zk-calendar-version}</version>
-		</dependency>-->
+		<dependency>
+			<groupId>org.zkoss.zk</groupId>
+			<artifactId>zkbind</artifactId>
+			<version>${zk-version}</version>
+		</dependency>
+		<!-- Local libraries -->
 		<dependency>
 	      	<groupId>org.zkoss.calendar</groupId>
 	      	<artifactId>calendar</artifactId>
@@ -47,12 +62,14 @@
 	      	<scope>system</scope>
 	      	<systemPath>${project.basedir}/WebContent/WEB-INF/lib/calendar.jar</systemPath>
 	    </dependency>
+	    <dependency>
+	      	<groupId>org.zkoss.theme</groupId>
+	      	<artifactId>silvertail</artifactId>
+	      	<version>1.0</version>
+	      	<scope>system</scope>
+	      	<systemPath>${project.basedir}/WebContent/WEB-INF/lib/silvertail.jar</systemPath>
+	    </dependency>
 		<!-- CXF // WS-SECURITY -->
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-ws-security</artifactId>
-			<version>${cxf-version}</version>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
@@ -68,23 +85,12 @@
 			<artifactId>cxf-rt-transports-http-jetty</artifactId>
 			<version>${cxf-version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.ws.security</groupId>
-			<artifactId>wss4j</artifactId>
-			<version>${wss4j-version}</version>
-		</dependency>
-		<!--  -->
-		<dependency>
-			<groupId>bouncycastle</groupId>
-			<artifactId>bouncycastle-jce-jdk13</artifactId>
-			<version>${bouncycastle-version}</version>
-		</dependency>
+		<!-- OTHERS -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>${mail-version}</version>
 		</dependency>
-		<!-- OTHERS -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -96,24 +102,19 @@
 			<version>${jfreechart-version}</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-			<version>${commons-configuration-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>bsh</groupId>
-			<artifactId>bsh</artifactId>
-			<version>${bsh-version}</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
 			<version>${commons-validator-version}</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>${commons-configuration-version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
-		<finalName>seaclouds_gui</finalName>
+		<finalName>softcare-gui</finalName>
 		
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -133,34 +134,51 @@
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+	            <groupId>org.codehaus.mojo</groupId>
+	            <artifactId>aspectj-maven-plugin</artifactId>
+	            <version>1.5</version>
+	            <executions>
+	                <execution>
+	                    <goals>
+	                        <goal>compile</goal>
+	                        <goal>test-compile</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	            <configuration>
+	                <complianceLevel>1.7</complianceLevel>
+	                <source>1.7</source>
+	                <target>1.7</target>
+	                <aspectLibraries>
+	                    <aspectLibrary>
+	                        <groupId>it.polimi.tower4clouds</groupId>
+	                        <artifactId>java-app-dc</artifactId>
+	                    </aspectLibrary>
+	                </aspectLibraries>
+	            </configuration>
+	        </plugin>
 		</plugins>
 	</build>
 	
 	<properties>
 		<!-- JAVA -->
-		<java-version>1.6</java-version>
-	
+		<java-version>1.7</java-version>
 		<!-- ENCODING -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
-		<!-- JARS -->
-		<!-- ZK - 6.5.4 // 5.0.7 // 5.0.11 // 7.0.0 -->
-		<zk-version>6.5.4</zk-version>
-		<!-- ZK CALENDAR -->
-		<zk-calendar-version>2.1.0</zk-calendar-version>
-		<!-- CXF - 2.5.11 // 2.7.10 // 2.6.11 -->
-		<cxf-version>2.7.10</cxf-version>
-		<!-- WSS4J - 1.6.14 // 1.5.12 -->
-		<wss4j-version>1.6.14</wss4j-version>
-		<!-- ENC / DEC -->
-		<bouncycastle-version>112</bouncycastle-version>
-		<mail-version>1.4.7</mail-version>
+		<!-- DEPENDENCIES VERSION -->
+		<!-- ZK - 5.0.11 // 6.5.4 // 7.0.3 -->
+		<zk-version>7.0.3</zk-version>
+		<!-- CXF - 2.7.16 // 3.1.0 -->
+		<cxf-version>3.1.0</cxf-version> 
 		<!-- OTHERS -->
-		<log4j-version>1.2.16</log4j-version>
-		<jfreechart-version>1.0.12</jfreechart-version>
-		<commons-configuration-version>1.6</commons-configuration-version>
-		<bsh-version>2.0b4</bsh-version>
+		<mail-version>1.4.7</mail-version>
+		<log4j-version>1.2.17</log4j-version>
+		<jfreechart-version>1.0.13</jfreechart-version>
 		<commons-validator-version>1.4.0</commons-validator-version>
+		<commons-configuration-version>1.10</commons-configuration-version>
 	</properties>
 	
 </project>

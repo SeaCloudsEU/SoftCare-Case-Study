@@ -5,25 +5,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.soap.SOAPBinding;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.cxf.frontend.ClientProxy;
-import org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor;
-import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
-import org.apache.ws.security.handler.WSHandlerConstants;
 import eu.ehealth.SystemDictionary;
-import eu.ehealth.Utilities;
-import eu.ehealth.security.ClientePasswordCallback;
-import eu.ehealth.ws_client.storagecomponent.StorageComponent;
 import eu.ehealth.ws_client.xsd.AdministratorInfo;
-import eu.ehealth.ws_client.xsd.Carer;
 import eu.ehealth.ws_client.xsd.CarerAssessment;
 import eu.ehealth.ws_client.xsd.CarerInfo;
 import eu.ehealth.ws_client.xsd.ClinicianInfo;
@@ -37,6 +25,7 @@ import eu.ehealth.ws_client.xsd.QuestionnaireInfo;
 import eu.ehealth.ws_client.xsd.SystemParameter;
 import eu.ehealth.ws_client.xsd.Task;
 import eu.ehealth.ws_client.xsd.Warning;
+import it.polimi.tower4clouds.java_app_dc.Monitor;
 
 
 /**
@@ -54,8 +43,6 @@ public class StorageComponentImpl implements StorageComponent
 	
 	// global connection values
 	private static URL _wsdlURL;
-	private static Map<String, Object> _outProps;
-	private static Map<String, Object> _inProps;
 	private static StorageComponentImplService _storageComponentImplService;
 	
 	
@@ -65,14 +52,12 @@ public class StorageComponentImpl implements StorageComponent
 	static {
 		try
 		{
-			SystemDictionary.webguiLog("DEBUG", "Initializing static connection properties ...");
-			
-			SystemDictionary.init();
+			SystemDictionary.webguiLog("INFO", "[StorageComponentImpl] Initializing static connection properties ...");
 			
 			if ((SystemDictionary.CONFIG_PROPERTIES != null) && (!SystemDictionary.CONFIG_PROPERTIES.isEmpty())) 
 			{
-				SystemDictionary.webguiLog("WARNING", "CONFIG_PROPERTIES is null or empty");
-				SystemDictionary.webguiLog("WARNING", "Reloading file...");
+				SystemDictionary.webguiLog("WARNING", "[StorageComponentImpl] CONFIG_PROPERTIES is null or empty");
+				SystemDictionary.webguiLog("WARNING", "[StorageComponentImpl] Reloading file...");
 				
 				try {
 					SystemDictionary.CONFIG_PROPERTIES = new PropertiesConfiguration("webgui.properties");
@@ -85,59 +70,21 @@ public class StorageComponentImpl implements StorageComponent
 			if ((SystemDictionary.CONFIG_PROPERTIES != null) && (!SystemDictionary.CONFIG_PROPERTIES.isEmpty())) 
 			{
 				// Take URI from 'webgui.properties' file, key 'storagecomponent.uri'
-				ClassLoader loader = StorageComponentImpl.class.getClassLoader();
+				//ClassLoader loader = StorageComponentImpl.class.getClassLoader();
 
 				// _wsdlURL
-				_wsdlURL = loader.getResource(SystemDictionary.CONFIG_PROPERTIES.getString("storagecomponent.local.uri.file"));
+				//_wsdlURL = loader.getResource(SystemDictionary.CONFIG_PROPERTIES.getString("storagecomponent.local.uri.file"));
+				_wsdlURL = new URL(SystemDictionary.getWebServicesURL());
+				SystemDictionary.webguiLog("INFO", "[StorageComponentImpl] wsdl URL ... [" + _wsdlURL + "]");
 				
 				// service
 				_storageComponentImplService = new StorageComponentImplService(_wsdlURL, SERVICE_NAME);
-		        
-		        // ws-security configuration - WS-SECURITY : Encrypt //////////
-			    String enableWsSecurity = SystemDictionary.CONFIG_PROPERTIES.getString("enableWsSecurity");
-			    if ((enableWsSecurity != null) && (enableWsSecurity.equals("true"))) 
-			    {
-				    // OUT-INTERCEPTOR
-			    	_outProps = new HashMap<String, Object>();
-			    	_outProps.put("action", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.action"));
-			    	_outProps.put("user", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.user")); 						 	
-			    	_outProps.put("encryptionPropFile", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.encryptionPropFile")); 	
-			    	_outProps.put("signaturePropFile", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.signaturePropFile"));  	
-			    	_outProps.put("encryptionUser", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.encryptionUser"));			
-			    	_outProps.put("passwordCallbackClass", ClientePasswordCallback.class.getName());
-			    	_outProps.put("signatureParts", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.signatureParts"));
-			    	_outProps.put("encryptionParts", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.encryptionParts"));
-			    	_outProps.put("encryptionSymAlgorithm", SystemDictionary.CONFIG_PROPERTIES.getString("ws.out.encryptionSymAlgorithm"));
-			    	
-			    	_outProps.put("signatureKeyIdentifier", "DirectReference");
-	
-		            // IN-INTERCEPTOR
-		            _inProps = new HashMap<String, Object>();
-		            _inProps.put("action", SystemDictionary.CONFIG_PROPERTIES.getString("ws.in.action"));
-		            _inProps.put("passwordCallbackClass", ClientePasswordCallback.class.getName());
-		            _inProps.put("decryptionPropFile", SystemDictionary.CONFIG_PROPERTIES.getString("ws.in.decryptionPropFile"));
-		            _inProps.put("signaturePropFile", SystemDictionary.CONFIG_PROPERTIES.getString("ws.in.signaturePropFile"));	
-			        
-			        // PROPERTY: TIMESTAMP
-				    String timestampValue = SystemDictionary.CONFIG_PROPERTIES.getString("timestamp.time");
-				    if ((timestampValue != null) && (Utilities.isInteger(timestampValue)))
-				    {
-				    	_outProps.put(WSHandlerConstants.TTL_TIMESTAMP, timestampValue);
-				    }
-			        
-			        // PROPERTY: MUST_UNDERSTAND
-				    String enableMustUnderstand = SystemDictionary.CONFIG_PROPERTIES.getString("enableMustUnderstand");
-				    if ((enableMustUnderstand != null) && (enableMustUnderstand.equals("false"))) 
-				    {
-				    	_outProps.put(WSHandlerConstants.MUST_UNDERSTAND, "false");
-				    }
-			    }
-			    
-			    SystemDictionary.webguiLog("DEBUG", "Static connection initialized");
+
+			    SystemDictionary.webguiLog("INFO", "[StorageComponentImpl] Static connection initialized");
 			}
 			else 
 			{
-				SystemDictionary.webguiLog("FATAL", "CONFIG_PROPERTIES is null or empty");
+				SystemDictionary.webguiLog("FATAL", "[StorageComponentImpl] CONFIG_PROPERTIES is null or empty");
 			}
 		}
 		catch (Exception severe)
@@ -158,56 +105,21 @@ public class StorageComponentImpl implements StorageComponent
 	 */
 	private void initStorageComponentImpl()
 	{
-		SystemDictionary.webguiLog("DEBUG", "Calling method 'initStorageComponentImpl'. Creating new connection ...");
 		try
 		{
 			if ((SystemDictionary.CONFIG_PROPERTIES != null) && (!SystemDictionary.CONFIG_PROPERTIES.isEmpty() 
 					&& (_storageComponentImplService != null))) 
 			{
 				_port = _storageComponentImplService.getStorageComponentImplPort(); 
-		        
-		        // ws-security configuration - WS-SECURITY : Encrypt //////////
-			    String enableWsSecurity = SystemDictionary.CONFIG_PROPERTIES.getString("enableWsSecurity");
-			    if ((enableWsSecurity != null) && (enableWsSecurity.equals("true")) && (_inProps != null) && (_outProps != null)) 
-			    {
-			    	SystemDictionary.webguiLog("DEBUG", "Communications with ws-security");
-			    	org.apache.cxf.endpoint.Client client = ClientProxy.getClient(_port);
-				    org.apache.cxf.endpoint.Endpoint cxfEndpoint = client.getEndpoint();
-		 
-			        cxfEndpoint.getInInterceptors().add(new WSS4JInInterceptor(_inProps));
-			        cxfEndpoint.getOutInterceptors().add(new WSS4JOutInterceptor(_outProps));
-				    
-				    // PROPERTY: MTOM
-				    String enableMTOM = SystemDictionary.CONFIG_PROPERTIES.getString("enableMTOM");
-				    if ((enableMTOM != null) && (enableMTOM.equals("false"))) 
-				    {
-				    	try 
-				    	{
-					    	BindingProvider bp = (BindingProvider)_port;
-					    	SOAPBinding binding = (SOAPBinding)bp.getBinding();
-					    	binding.setMTOMEnabled(false);
-				    	}
-				    	catch (Exception ex)
-						{
-				    		SystemDictionary.logException(ex);
-						}
-				    }
-			    }
-			    else {
-			    	SystemDictionary.webguiLog("DEBUG", "Communications without ws-security");
-			    }
 			}
 			else 
 			{
-				SystemDictionary.webguiLog("FATAL", "CONFIG_PROPERTIES is null or empty");
-				//System.exit(-2);
+				SystemDictionary.webguiLog("FATAL", "[StorageComponentImpl] CONFIG_PROPERTIES is null or empty");
 			}
-			SystemDictionary.webguiLog("DEBUG", "New connection created");
 		}
 		catch (Exception severe)
 		{
 			SystemDictionary.logException(severe);
-			//System.exit(-2);
 		}
 	}
 
@@ -256,15 +168,6 @@ public class StorageComponentImpl implements StorageComponent
 		if (_port == null)
 			initStorageComponentImpl();
 		return _port.getPatient(id, userId);
-	}
-
-
-	@Override
-	public eu.ehealth.ws_client.xsd.OperationResult deletePatient(java.lang.String id, java.lang.String userId)
-	{
-		if (_port == null)
-			initStorageComponentImpl();
-		return _port.deletePatient(id, userId);
 	}
 
 
@@ -330,15 +233,6 @@ public class StorageComponentImpl implements StorageComponent
 		catch (Exception ex) {}
 		
 		return arr;
-	}
-
-
-	@Override
-	public eu.ehealth.ws_client.xsd.OperationResult updateUser(eu.ehealth.ws_client.xsd.User user)
-	{
-		if (_port == null)
-			initStorageComponentImpl();
-		return _port.updateUser(user);
 	}
 
 
@@ -607,7 +501,7 @@ public class StorageComponentImpl implements StorageComponent
 
 
 	@Override
-	public java.util.List<eu.ehealth.ws_client.xsd.Carer> getAvailableCarers(java.lang.String userId)
+	public java.util.List<eu.ehealth.ws_client.xsd.CarerInfo> getAvailableCarers(java.lang.String userId)
 	{
 		if (_port == null)
 			initStorageComponentImpl();
@@ -623,28 +517,19 @@ public class StorageComponentImpl implements StorageComponent
 	 * @param userId
 	 * @return
 	 */
-	public eu.ehealth.ws_client.xsd.Carer[] getAvailableCarersArr(java.lang.String userId)
+	public eu.ehealth.ws_client.xsd.CarerInfo[] getAvailableCarersArr(java.lang.String userId)
 	{
-		eu.ehealth.ws_client.xsd.Carer[] arr = new eu.ehealth.ws_client.xsd.Carer[0];
+		eu.ehealth.ws_client.xsd.CarerInfo[] arr = new eu.ehealth.ws_client.xsd.CarerInfo[0];
 		try {
-			ArrayList<eu.ehealth.ws_client.xsd.Carer> l = (ArrayList<Carer>) getAvailableCarers(userId);
+			ArrayList<eu.ehealth.ws_client.xsd.CarerInfo> l = (ArrayList<CarerInfo>) getAvailableCarers(userId);
 			
 			if (l != null) {
-				arr = l.toArray(new eu.ehealth.ws_client.xsd.Carer[l.size()]);
+				arr = l.toArray(new eu.ehealth.ws_client.xsd.CarerInfo[l.size()]);
 			}
 		}
 		catch (Exception ex) {}
 		
 		return arr;
-	}
-
-
-	@Override
-	public eu.ehealth.ws_client.xsd.OperationResult auth(java.lang.String login, java.lang.String password, java.lang.String token)
-	{
-		if (_port == null)
-			initStorageComponentImpl();		
-		return _port.auth(login, password, token);
 	}
 
 
@@ -939,16 +824,6 @@ public class StorageComponentImpl implements StorageComponent
 		
 		return arr;
 	}
-
-
-	@Override
-	public java.util.List<eu.ehealth.ws_client.xsd.PatientInfo> listOfPatients(
-			java.util.List<eu.ehealth.ws_client.xsd.SearchCriteria> filter, java.lang.String userId)
-	{
-		if (_port == null)
-			initStorageComponentImpl();
-		return _port.listOfPatients(filter, userId);
-	}
 	
 	
 	/**
@@ -1076,7 +951,7 @@ public class StorageComponentImpl implements StorageComponent
 			XMLGregorianCalendar date_toData = DatatypeFactory.newInstance().newXMLGregorianCalendar(c2);
 			
 			ArrayList<eu.ehealth.ws_client.xsd.Task> l = 
-					(ArrayList<Task>) getUserPlannedTasks(userId, date_fromData, date_toData, locale, userId);
+					(ArrayList<Task>) getUserPlannedTasks(userId, date_fromData, date_toData, locale, requesterId);
 			
 			if (l != null) {
 				arr = l.toArray(new eu.ehealth.ws_client.xsd.Task[l.size()]);
@@ -1294,15 +1169,6 @@ public class StorageComponentImpl implements StorageComponent
 
 
 	@Override
-	public String[] login(String userName, String password)
-	{
-		if (_port == null)
-			initStorageComponentImpl();
-		return _port.login(userName, password);
-	}
-
-
-	@Override
 	public String[] lockout(String userName)
 	{
 		if (_port == null)
@@ -1317,6 +1183,24 @@ public class StorageComponentImpl implements StorageComponent
 		if (_port == null)
 			initStorageComponentImpl();
 		return _port.getUserIdByCarerId(id, userId);
+	}
+	
+	
+	@Override
+	public OperationResult getUserIdByAdminId(String id, String userId)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.getUserIdByAdminId(id, userId);
+	}
+	
+	
+	@Override
+	public OperationResult getUserIdByClinicianId(String id, String userId)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.getUserIdByClinicianId(id, userId);
 	}
 
 
@@ -1355,5 +1239,126 @@ public class StorageComponentImpl implements StorageComponent
 		return _port.getEhealthParameters();
 	}
 
+
+	@Override
+	public void logout(String idUser, String sessionId) {
+		if (_port == null)
+			initStorageComponentImpl();
+		_port.logout(idUser, sessionId);
+	}
+
+
+	@Override
+	public Object[] getConnectedUsers(String idUser) {
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.getConnectedUsers(idUser);
+	}
+
+
+	@Override
+	public List<String[]> getAppConfig(String userId) {
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.getAppConfig(userId);
+	}
+
+
+	@Override
+	public List<String[]> listOfUsers(String userId) {
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.listOfUsers(userId);
+	}
+
+
+	@Override
+	public OperationResult lockUser(String userId, int id, boolean locked) {
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.lockUser(userId, id, locked);
+	}
+
+
+	@Override
+	public OperationResult updateAppConfigRow(String userId, int id, String value, boolean active) {
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.updateAppConfigRow(userId, id, value, active);
+	}
+
+
+	@Override
+	public String[] getStatus()
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.getStatus();
+	}
+
+
+	@Override
+	public String initDB(String id)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.initDB(id);
+	}
+	
+	
+	///////////////////////////////////////////////////////////////////////////
+	// MONITORED METHODS
+	// 		--> login, updateData, getData, deleteData
+	///////////////////////////////////////////////////////////////////////////
+
+	@Override
+	@Monitor(type = "login")
+	public eu.ehealth.ws_client.xsd.OperationResult auth(java.lang.String login, java.lang.String password, java.lang.String token)
+	{
+		if (_port == null)
+			initStorageComponentImpl();		
+		return _port.auth(login, password, token);
+	}
+	
+	
+	@Override
+	public String[] login(String userName, String password)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.login(userName, password);
+	}
+	
+	
+	@Override
+	@Monitor(type = "updateData")
+	public eu.ehealth.ws_client.xsd.OperationResult updateUser(eu.ehealth.ws_client.xsd.User user)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.updateUser(user);
+	}
+	
+	
+	@Override
+	@Monitor(type = "getData")
+	public java.util.List<eu.ehealth.ws_client.xsd.PatientInfo> listOfPatients(
+			java.util.List<eu.ehealth.ws_client.xsd.SearchCriteria> filter, java.lang.String userId)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.listOfPatients(filter, userId);
+	}
+	
+	
+	@Override
+	@Monitor(type = "deleteData")
+	public eu.ehealth.ws_client.xsd.OperationResult deletePatient(java.lang.String id, java.lang.String userId)
+	{
+		if (_port == null)
+			initStorageComponentImpl();
+		return _port.deletePatient(id, userId);
+	}
+	
 	
 }

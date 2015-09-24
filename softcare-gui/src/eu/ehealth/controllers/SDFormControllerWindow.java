@@ -74,7 +74,18 @@ public class SDFormControllerWindow extends AladdinFormControllerWindow
 		SystemParameter living = new SystemParameter(lcode, lvalue);
 
 		// Creating socio-demographic object to store
-		SocioDemographicData sdData = new SocioDemographicData(gender, marital, children, living, birthdayStr);
+		SocioDemographicData sdData = null;
+		try
+		{
+			Integer heightStr = ((Intbox) getFellow("pat_height")).getValue();
+			SystemParameter height = new SystemParameter(heightStr.toString(), "Height");
+			
+			sdData = new SocioDemographicData(gender, marital, children, living, birthdayStr, height);
+		}
+		catch (Exception e)
+		{
+			SystemDictionary.webguiLog("ERROR", e.getMessage());
+		}
 		
 		return sdData;
 	}
@@ -96,6 +107,7 @@ public class SDFormControllerWindow extends AladdinFormControllerWindow
 		String divorced = Labels.getLabel("patients.form.sd.marital.divorced");
 		String male = Labels.getLabel("patients.form.male");
 		String female = Labels.getLabel("patients.form.female");
+		String height = "Height (cm)";
 
 		String alone = SystemDictionary.LIVING_ALONE_LBL;
 		String sons = SystemDictionary.LIVING_SONDAUGHTER_LBL;
@@ -105,10 +117,13 @@ public class SDFormControllerWindow extends AladdinFormControllerWindow
 		String health = SystemDictionary.LIVING_PARTER_SONDAUGHTER_SDLAW_GRANDSON_LBL;
 
 		ArrayList<SimpleFieldData> rowsD = new ArrayList<SimpleFieldData>();
-		rowsD.add(new SimpleFieldData("Birthday (dd/MM/yyyy)", "pat_birthday", "no empty"));
+		rowsD.add(new SimpleFieldData("#TXT# Birthday (dd/MM/yyyy)", "pat_birthday", "no empty"));
 
 		ArrayList<SimpleFieldData> rowsA = new ArrayList<SimpleFieldData>();
 		rowsA.add(new SimpleFieldData(children, "pat_children", "no empty"));
+		
+		ArrayList<SimpleFieldData> rowsA2 = new ArrayList<SimpleFieldData>();
+		rowsA2.add(new SimpleFieldData(height, "pat_height", "no empty"));
 
 		ArrayList<SimpleFieldData> genderlist = new ArrayList<SimpleFieldData>();
 		genderlist.add(new SimpleFieldData(male, "1"));
@@ -136,6 +151,7 @@ public class SDFormControllerWindow extends AladdinFormControllerWindow
 		this.appendSubFormTitleRow(personal, rows);
 		this.appendDateboxFields(rowsD, rows);
 		this.appendIntboxFields(rowsA, rows);
+		this.appendIntboxFields(rowsA2, rows);
 		this.appendRadioElement(genderlist, rows, gender, "pat_gender");
 		this.appendListboxElement(maritallist, rows, marital, "pat_marital");
 		this.appendListboxElement(livinglist, rows, living, "pat_living");
@@ -151,11 +167,19 @@ public class SDFormControllerWindow extends AladdinFormControllerWindow
 	 */
 	protected void addSocioDemographicDataFieldsValue()
 	{
-		((Datebox) this.getFellow("pat_birthday")).setValue(this.currentsd.getBirthdayDate());
-		((Intbox) this.getFellow("pat_children")).setValue(new Integer(this.currentsd.getChildren().toString()));
-		((Radiogroup) this.getFellow("pat_gender")).setSelectedIndex(Integer.parseInt(this.currentsd.getGender().getCode()) - 1);
-		((Listbox) this.getFellow("pat_marital")).setSelectedIndex(Integer.parseInt(this.currentsd.getMaritalStatus().getCode()) - 1);
-		((Listbox) this.getFellow("pat_living")).setSelectedIndex(Integer.parseInt(this.currentsd.getLivingWith().getCode()));
+		try
+		{
+			((Datebox) this.getFellow("pat_birthday")).setValue(this.currentsd.getBirthdayDate());
+			((Intbox) this.getFellow("pat_children")).setValue(new Integer(this.currentsd.getChildren().toString()));
+			((Radiogroup) this.getFellow("pat_gender")).setSelectedIndex(Integer.parseInt(this.currentsd.getGender().getCode()) - 1);
+			((Listbox) this.getFellow("pat_marital")).setSelectedIndex(Integer.parseInt(this.currentsd.getMaritalStatus().getCode()) - 1);
+			((Listbox) this.getFellow("pat_living")).setSelectedIndex(Integer.parseInt(this.currentsd.getLivingWith().getCode()));
+			((Intbox) this.getFellow("pat_height")).setValue(new Integer(this.currentsd.getHeight().getCode()));
+		}
+		catch (Exception e)
+		{
+			SystemDictionary.webguiLog("ERROR", e.getMessage());
+		}
 	}
 	
 

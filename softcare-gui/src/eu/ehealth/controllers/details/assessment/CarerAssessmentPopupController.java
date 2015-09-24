@@ -1,15 +1,23 @@
 package eu.ehealth.controllers.details.assessment;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zul.Include;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
+
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.CarerAssessment;
 import eu.ehealth.ws_client.xsd.OperationResult;
@@ -89,13 +97,17 @@ public class CarerAssessmentPopupController extends Window
 			OperationResult res = proxy.saveCarerAssessment(cass, userid);
 			SystemDictionary.webguiLog("INFO", "CARER ASSESSMENT: " + res.getCode() + "-" + res.getDescription());
 		}
-		catch (Exception re)
+		catch (Exception e)
 		{
-			re.printStackTrace();
+			SystemDictionary.logException(e);
+			Messagebox.show("Error : " + e.getMessage(), "#TXT# Save assesment", Messagebox.OK, Messagebox.ERROR);
 		}
 		finally
 		{
-			Executions.getCurrent().sendRedirect("");
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc(null);
+			comp.setSrc("../carers/details.zul?patid=" + carerid);
 		}
 	}
 

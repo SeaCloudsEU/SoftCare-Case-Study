@@ -1,0 +1,38 @@
+<?page contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<?link rel="icon" type="image/x-icon" href="/inc/favicon.ico"?>
+<zk>
+	<include src="/inc/header.zul"/>
+	<window id="paintitblack"></window>
+	<zscript>
+		import org.zkoss.util.resource.Labels;
+		import eu.ehealth.ws_client.StorageComponentImpl;
+		import eu.ehealth.ws_client.xsd.Clinician;
+		import eu.ehealth.controllers.ClinicianControllerWindow;
+		
+		
+		String title = Labels.getLabel("clinicians.update.title");
+		page.setTitle(title);	
+		
+		String clinid = (String)Executions.getCurrent().getParameter("clinid");
+		StorageComponentImpl proxy = new StorageComponentImpl();
+		Session ses = Sessions.getCurrent();
+		String userid = (String)ses.getAttribute("userid");
+		try
+		{
+			Clinician clinicobj = proxy.getClinician(clinid,userid);
+			ClinicianControllerWindow window = new ClinicianControllerWindow(clinicobj, true);
+			((Window)page.getFellow("paintitblack")).appendChild(window);
+			window.setTitle(title);
+			window.setId("clinicform");
+			window.setSclass("centerwin");
+			window.setWidth("900px");
+			window.doEmbedded();
+		}
+		catch(Exception re)
+		{
+			re.printStackTrace();
+		}
+	</zscript>
+	<include src="/inc/footer.zul"/>
+</zk>

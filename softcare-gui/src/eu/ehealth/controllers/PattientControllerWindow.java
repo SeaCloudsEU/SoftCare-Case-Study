@@ -1,6 +1,8 @@
 package eu.ehealth.controllers;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
@@ -10,13 +12,15 @@ import org.zkoss.util.resource.Labels;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Grid;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Include;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.Rows;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
-import eu.ehealth.ErrorDictionary;
 import eu.ehealth.SystemDictionary;
+import eu.ehealth.utilities.ComponentsFinder;
 import eu.ehealth.ws_client.StorageComponentImpl;
 import eu.ehealth.ws_client.xsd.Carer;
 import eu.ehealth.ws_client.xsd.Clinician;
@@ -71,11 +75,8 @@ public class PattientControllerWindow extends SDFormControllerWindow
 		this.currentdata = current.getPersonData();
 		this.currentsd = current.getSDData();
 		this.currentresp = current.getResponsibleClinicianID();
-		SystemDictionary.webguiLog("TRACE", "Social Worker: " + current.getSocialWorker().getName());
 		this.currentsocialworker = current.getSocialWorker();
-		SystemDictionary.webguiLog("TRACE", "Consulter: " + current.getConsulterInCharge().getName());
 		this.currentconsulter = current.getConsulterInCharge();
-		SystemDictionary.webguiLog("TRACE", "General Practicioner: " + current.getGeneralPractitioner().getName());
 		this.currentgeneralpracticioner = current.getGeneralPractitioner();
 		this.currentcarers = current.getPatientCarer();
 
@@ -137,44 +138,45 @@ public class PattientControllerWindow extends SDFormControllerWindow
 			StorageComponentImpl proxy = SystemDictionary.getSCProxy();
 			Session ses = Sessions.getCurrent();
 			String id = (String) ses.getAttribute("userid");
-			Carer car2set = proxy.getCarer(carerId, id);
-			SystemDictionary.webguiLog("DEBUG", "Social worker: " + socialw.getName());
-			SystemDictionary.webguiLog("DEBUG", "Consulter: " + consulter.getName());
-			SystemDictionary.webguiLog("DEBUG", "General practicioner: " + gralprac.getName());
 			
+			Carer car2set = proxy.getCarer(carerId, id);
 			Patient patient = new Patient("", personData, sdData, resClinic, socialw, consulter, gralprac, car2set);
 			
 			if (newpatient)
 			{
 				result = proxy.createPatient(patient, id);
-				SystemDictionary.webguiLog("INFO", "Patient ID: " + result.getCode());
 				String username = this.getUsername();
 
 				User user = createNewUser(SystemDictionary.USERTYPE_PATIENT, result.getCode(), username);
 				result = proxy.createUser(user);
 				if (!result.getDescription().equals("ok"))
 				{
-					SystemDictionary.webguiLog("TRACE", "Error creating user");
 					Window win = (Window) getFellow("internalformerror");
 					((Label) win.getFellow("errorlbl")).setValue("Username not valid");
 					getFellow("internalformerror").setVisible(true);
-					SystemDictionary.webguiLog("TRACE", "Deleting Patient...");
-					OperationResult newresult = proxy.deletePatient(user.getPersonID(), id);
-					SystemDictionary.webguiLog("TRACE", "Delete Patient result: " + newresult.getCode());
+					proxy.deletePatient(user.getPersonID(), id);
 					return;
 				}
-				Executions.getCurrent().sendRedirect("/patients/index.zul");
+				
+				Messagebox.show("#TXT# User (id= " + result.getCode() + ") created succesfully", "#TXT# Create New User", 
+						Messagebox.OK, Messagebox.INFORMATION);
 			}
 			else
 			{
 				patient.setID(this.currentid);
 				result = proxy.updatePatient(patient, id);
-				Executions.getCurrent().sendRedirect("/patients/index.zul");
+				
+				Messagebox.show("#TXT# User modified succesfully", "#TXT# Modify User", Messagebox.OK, Messagebox.INFORMATION);
 			}
+
+			Collection<Component> col = Executions.getCurrent().getDesktop().getComponents();
+			Include comp = (Include) ComponentsFinder.getUIComponent(col, "app_content");
+			comp.setSrc("../patients/index_content.zul");
 		}
 		catch (Exception e)
 		{
-			ErrorDictionary.redirectWithError("/carers/?error=" + ErrorDictionary.UNKOW_ERROR);
+			SystemDictionary.logException(e);
+			Messagebox.show("#TXT# Error : " + e.getMessage(), "#TXT# Create New User", Messagebox.OK, Messagebox.ERROR);
 		}
 	}
 
@@ -186,15 +188,17 @@ public class PattientControllerWindow extends SDFormControllerWindow
 	 */
 	public void createDialog() throws InterruptedException
 	{
-		if (this.clist == null)
+		try
 		{
 			this.clist = new CarerListWindowController(this);
 			this.appendChild(this.clist);
 			this.clist.doModal();
+			
+			this.clist = null;
 		}
-		else
+		catch (Exception e)
 		{
-			this.clist.doModal();
+			SystemDictionary.logException(e);
 		}
 	}
 
@@ -210,7 +214,7 @@ public class PattientControllerWindow extends SDFormControllerWindow
 		if (this.getFellowIfAny("rclinlistwin") == null)
 		{
 			ClinicianListForPatients respolist = 
-					(ClinicianListForPatients) Executions.getCurrent().createComponents("/patients/clinlist.zul", this, null);
+					(ClinicianListForPatients) Executions.getCurrent().createComponents("../patients/clinlist.zul", this, null);
 			respolist.doModal();
 		}
 	}
@@ -392,24 +396,24 @@ public class PattientControllerWindow extends SDFormControllerWindow
 		Rows rows2 = new Rows();
 		Rows rows3 = new Rows();
 
-		this.appendSubFormTitleRow("Social Workrer Info", rows1);
-		this.appendSubFormTitleRow("Consulter Info", rows2);
-		this.appendSubFormTitleRow("General Practicioner Info", rows3);
+		this.appendSubFormTitleRow("#TXT# Social Workrer Info", rows1);
+		this.appendSubFormTitleRow("#TXT# Consulter Info", rows2);
+		this.appendSubFormTitleRow("#TXT# General Practicioner Info", rows3);
 
 		ArrayList<SimpleFieldData> rowsA = new ArrayList<SimpleFieldData>();
-		rowsA.add(new SimpleFieldData("Name", "pat_swname"));
-		rowsA.add(new SimpleFieldData("E-mail", "pat_swmail"));
-		rowsA.add(new SimpleFieldData("Phone", "pat_swphone"));
+		rowsA.add(new SimpleFieldData("#TXT# Name", "pat_swname"));
+		rowsA.add(new SimpleFieldData("#TXT# E-mail", "pat_swmail"));
+		rowsA.add(new SimpleFieldData("#TXT# Phone", "pat_swphone"));
 
 		ArrayList<SimpleFieldData> rowsB = new ArrayList<SimpleFieldData>();
-		rowsB.add(new SimpleFieldData("Name", "pat_consname"));
-		rowsB.add(new SimpleFieldData("E-mail", "pat_consmail"));
-		rowsB.add(new SimpleFieldData("Phone", "pat_consphone"));
+		rowsB.add(new SimpleFieldData("#TXT# Name", "pat_consname"));
+		rowsB.add(new SimpleFieldData("#TXT# E-mail", "pat_consmail"));
+		rowsB.add(new SimpleFieldData("#TXT# Phone", "pat_consphone"));
 
 		ArrayList<SimpleFieldData> rowsC = new ArrayList<SimpleFieldData>();
-		rowsC.add(new SimpleFieldData("Name", "pat_gpname"));
-		rowsC.add(new SimpleFieldData("E-mail", "pat_gpmail"));
-		rowsC.add(new SimpleFieldData("Phone", "pat_gpphone"));
+		rowsC.add(new SimpleFieldData("#TXT# Name", "pat_gpname"));
+		rowsC.add(new SimpleFieldData("#TXT# E-mail", "pat_gpmail"));
+		rowsC.add(new SimpleFieldData("#TXT# Phone", "pat_gpphone"));
 
 		this.appendTextboxFields(rowsA, rows1);
 		this.appendTextboxFields(rowsB, rows2);
@@ -430,15 +434,14 @@ public class PattientControllerWindow extends SDFormControllerWindow
 	 */
 	protected void addSocialWorkerConsulterAndGPFieldsValues()
 	{
-		SystemDictionary.webguiLog("DEBUG", "this.currentsocialworker.getName()");
 		((Textbox) getFellow("pat_swname")).setValue(this.currentsocialworker.getName());
 		((Textbox) getFellow("pat_swmail")).setValue(this.currentsocialworker.getEmail());
 		((Textbox) getFellow("pat_swphone")).setValue(this.currentsocialworker.getPhone());
-		SystemDictionary.webguiLog("DEBUG", "this.currentconsulter.getName()");
+		
 		((Textbox) getFellow("pat_consname")).setValue(this.currentconsulter.getName());
 		((Textbox) getFellow("pat_consmail")).setValue(this.currentconsulter.getEmail());
 		((Textbox) getFellow("pat_consphone")).setValue(this.currentconsulter.getPhone());
-		SystemDictionary.webguiLog("DEBUG", "this.currentgeneralpracticioner.getName()");
+		
 		((Textbox) getFellow("pat_gpname")).setValue(this.currentgeneralpracticioner.getName());
 		((Textbox) getFellow("pat_gpmail")).setValue(this.currentgeneralpracticioner.getEmail());
 		((Textbox) getFellow("pat_gpphone")).setValue(this.currentgeneralpracticioner.getPhone());
@@ -522,7 +525,7 @@ public class PattientControllerWindow extends SDFormControllerWindow
 			if (((Textbox) getFellow("pat_respo")).getValue() == null || ((Textbox) getFellow("pat_respo")).getValue().trim().equals(""))
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must select some clinician");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must select some clinician");
 				getFellow("internalformerror").setVisible(true);
 				
 				return false;
@@ -530,7 +533,7 @@ public class PattientControllerWindow extends SDFormControllerWindow
 			else if (((Textbox) getFellow("pat_carid")).getValue() == null || ((Textbox) getFellow("pat_carid")).getValue().trim().equals(""))
 			{
 				Window win = (Window) getFellow("internalformerror");
-				((Label) win.getFellow("errorlbl")).setValue("You must select some carer");
+				((Label) win.getFellow("errorlbl")).setValue("#TXT# You must select some carer");
 				getFellow("internalformerror").setVisible(true);
 				
 				return false;
